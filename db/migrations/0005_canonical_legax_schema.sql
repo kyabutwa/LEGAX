@@ -99,6 +99,7 @@ BEGIN
     definition := pg_get_functiondef(r.oid);
     definition := replace(definition, 'legakeys.', 'legax.');
     definition := replace(definition, 'LEGAKEYS_', 'LEGAX_');
+    definition := replace(definition, '''legakeys''', '''legax''');
     EXECUTE definition;
   END LOOP;
 END
