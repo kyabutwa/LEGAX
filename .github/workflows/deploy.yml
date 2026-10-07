@@ -75,7 +75,7 @@ jobs:
             assert((await page.text()).includes("Create account"),"/account GET missing create form");
 
             const created=await fetch(base+"/account",{method:"POST",redirect:"manual",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:"create",display_name:name,email,password})});
-            assert(created.status===303,"account creation did not return 303; got "+created.status);
+            if(created.status!==303){ console.error("ACCOUNT_CREATE_RESPONSE",created.status,await created.text()); throw new Error("account creation failed"); }
             assert(created.headers.get("location")==="/account","account creation location mismatch");
             cookie=getCookie(created);
             assert(cookie.includes("legax_session="),"account creation did not set a session cookie");
