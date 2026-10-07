@@ -53,6 +53,6 @@ AI may optimize placement, recommend offers, detect fraud, forecast campaign per
 11. AI cannot manufacture consent.
 12. Advertising cannot alter authorization.
 
-**Standards alignment:** privacy and consent integrations should use applicable jurisdictional requirements and, where relevant, established advertising transparency/consent specifications rather than inventing incompatible consent semantics. citeturn0search15
+**Standards alignment:** privacy and consent integrations should use applicable jurisdictional requirements and, where relevant, established advertising transparency/consent specifications rather than inventing incompatible consent semantics.
 
 **Status:** Advanced service contract — ready for campaign, policy, consent, placement, measurement, billing, privacy, and provider integration design.
