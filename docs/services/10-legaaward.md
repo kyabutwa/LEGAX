@@ -1,21 +1,56 @@
 # LegaX — LegaAward
 
-## LegaAward — Recognition, Incentives & Benefits
+## 13.10 — LegaAward Advanced Service Contract
 
-**Canonical definition**
+### Canonical definition
 
-LegaAward is the LegaX service responsible for coordinating governed awards, recognition, incentives, grants, benefits, credits, or other value-bearing acknowledgements according to explicit criteria, evidence, eligibility, review, authorization, issuance, lifecycle, and dispute rules.
+LegaAward is the governed service for recognition, awards, grants, incentives, credits, benefits, prizes, and other value-bearing acknowledgements issued according to explicit programs, eligibility criteria, evidence, review, selection, authorization, issuance, acceptance, usage, expiry, revocation, and dispute rules.
 
-LegaAward must distinguish recognition from ownership, eligibility from entitlement, recommendation from selection, selection from authorization, and issuance from final economic settlement. An award must be attributable to the authority and criteria that produced it.
+LegaAward separates eligibility from entitlement, recommendation from selection, selection from authorization, award issuance from acceptance, and economic issuance from final settlement.
 
-**Canonical flow:** Program/Criterion → Eligibility → Evidence → Evaluation/Review → Selection → Authorization → Award Issuance → Acceptance/Use → Event/Evidence.
+### Domain model
 
-**Core boundaries:** a score is not entitlement; an AI recommendation is not selection; selection is not authorization; an award notification is not necessarily issuance or settlement; a benefit may have expiry, revocation, transferability, or usage conditions.
+Core objects: AwardProgram, Criterion, EligibilityRule, Candidate, EvidenceSet, Evaluation, Review, Selection, Approval, Award, Benefit, Issuance, Redemption/Use, Expiry, Revocation, Appeal, Dispute, FundingSourceReference, and AwardEvent.
 
-**Governance:** criteria, conflicts of interest, review, appeals, fraud controls, eligibility lifecycle, evidence provenance, jurisdiction, and transparent state transitions are first-class.
+### Program lifecycle
 
-**AI boundary:** intelligence may identify candidates, summarize evidence, score against approved criteria, or assist review, but cannot create entitlement or silently determine a consequential award without the explicitly authorized governance path.
+**DRAFT → REVIEW → APPROVED → PUBLISHED → OPEN → CLOSED → ARCHIVED**
 
-**Composition:** LegaAward may use LegaPay for monetary awards or LegaMarket/other services for benefits through explicit contracts.
+Award lifecycle may be **NOMINATED → ELIGIBILITY_VERIFIED → REVIEWED → SELECTED → AUTHORIZED → ISSUED → ACCEPTED/REDEEMED → COMPLETED**.
 
-**Status:** Foundational service contract — implementation intentionally deferred.
+Exceptions include **REJECTED, EXPIRED, REVOKED, DISPUTED, VOIDED**.
+
+### Criteria and evidence
+
+Every consequential award must identify criteria version, eligibility basis, evidence considered, evaluation method, reviewer/authority where required, selection outcome, and authorization source.
+
+A score is not entitlement. Evidence may be declared, verified, observed, or inferred and must retain provenance.
+
+### Fairness and governance
+
+Programs should support conflict-of-interest controls, separation of duties, appeal/review, eligibility change handling, duplicate-award prevention, funding limits, and jurisdiction-specific rules.
+
+### Economic composition
+
+Monetary awards can use LegaPay. Credits or benefits can use LegaMarket or other LegaServices. Issuance and settlement remain separate states.
+
+### AI
+
+AI may identify candidates, summarize evidence, detect anomalies, assist evaluation, or recommend recipients. AI cannot silently create eligibility, entitlement, selection, or authorization.
+
+### Advanced invariants
+
+1. Eligibility ≠ entitlement.
+2. Score ≠ award.
+3. Recommendation ≠ selection.
+4. Selection ≠ authorization.
+5. Issuance ≠ settlement.
+6. Evidence retains provenance.
+7. Program criteria are versioned.
+8. Appeals remain traceable.
+9. Duplicate issuance is prevented by idempotency and eligibility constraints.
+10. AI cannot grant an award.
+11. Revocation is governed and auditable.
+12. Funding limits are enforceable policy.
+
+**Status:** Advanced service contract — ready for program, criteria, evidence, review, issuance, benefit, payment, and dispute implementation.
