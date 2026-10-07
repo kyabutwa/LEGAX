@@ -356,3 +356,55 @@ begin
   end loop;
 end;
 $$;
+
+alter table core.authorization_decisions
+  add constraint authorization_decisions_credential_fk
+  foreign key (credential_id) references core.credentials(id);
+
+alter table lifecycle.verifications
+  add constraint verifications_evidence_fk
+  foreign key (evidence_id) references audit.evidence(id);
+
+alter table lifecycle.transition_requests
+  add constraint transition_requests_expected_version_ck
+  check (expected_version is null or expected_version > 0);
+
+create or replace function lifecycle.validate_graph_consistency()
+returns trigger
+language plpgsql
+as $$
+declare
+  from_graph text;
+  to_graph text;
+begin
+  select graph_key into from_graph from lifecycle.states where id = new.from_state_id;
+  select graph_key into to_graph from lifecycle.states where id = new.to_state_id;
+  if from_graph is null or to_graph is null or from_graph <> new.graph_key or to_graph <> new.graph_key then
+    raise exception 'LIFECYCLE_GRAPH_MISMATCH';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger transitions_graph_consistency
+before insert or update on lifecycle.transitions
+for each row execute function lifecycle.validate_graph_consistency();
+
+create or replace function lifecycle.validate_binding_graph()
+returns trigger
+language plpgsql
+as $$
+declare
+  state_graph text;
+begin
+  select graph_key into state_graph from lifecycle.states where id = new.current_state_id;
+  if state_graph is null or state_graph <> new.graph_key then
+    raise exception 'LIFECYCLE_BINDING_GRAPH_MISMATCH';
+  end if;
+  return new;
+end;
+$$;
+
+create trigger lifecycle_bindings_graph_consistency
+before insert or update on lifecycle.lifecycle_bindings
+for each row execute function lifecycle.validate_binding_graph();
