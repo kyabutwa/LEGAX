@@ -34,3 +34,11 @@ test("Phase 33 has no legacy product names in runtime files", async () => {
     assert.doesNotMatch(content, /LegaKeys|LegaPin/);
   }
 });
+
+test("Canonical schema migration is explicit and non-duplicating", async () => {
+  const migration = await read("../db/migrations/0005_canonical_legax_schema.sql");
+  assert.match(migration, /ALTER SCHEMA legakeys RENAME TO legax/);
+  assert.match(migration, /product_name = 'LegaX'/);
+  assert.match(migration, /canonical_schema = 'legax'/);
+  assert.doesNotMatch(migration, /CREATE SCHEMA legax/);
+});
