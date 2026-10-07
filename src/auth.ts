@@ -41,12 +41,12 @@ export async function createAccount(env:AuthEnv,input:{email:string,password:str
  if(existing.length) throw new Error("ACCOUNT_ALREADY_EXISTS");
 
  const secret=await passwordHash(input.password);
- const entityId=crypto.randomUUID(),identityId=crypto.randomUUID(),accountId=crypto.randomUUID(),credentialId=crypto.randomUUID();
+ const entityId=crypto.randomUUID(),personId=crypto.randomUUID(),identityId=crypto.randomUUID(),accountId=crypto.randomUUID(),credentialId=crypto.randomUUID();
  const rows=await sql`WITH e AS (
    INSERT INTO legax.entities(entity_id,entity_type,canonical_name,display_name,lifecycle_state,effective_from)
    VALUES(${entityId},'PERSON',${name},${name},'ACTIVE',now()) RETURNING entity_id
  ), p AS (
-   INSERT INTO legax.persons(entity_id,display_name) SELECT entity_id,${name} FROM e RETURNING entity_id
+   INSERT INTO legax.persons(person_id,entity_id,display_name) SELECT ${personId},entity_id,${name} FROM e RETURNING entity_id
  ), i AS (
    INSERT INTO legax.identities(identity_id,entity_id,identity_type,state,verification_state)
    SELECT ${identityId},entity_id,'PERSON','ACTIVE','UNVERIFIED' FROM p RETURNING identity_id
