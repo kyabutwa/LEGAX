@@ -21,14 +21,7 @@
       "name": "legax",
       "vars": {
         "ENVIRONMENT": "production"
-      },
-      "routes": [
-        {
-          "pattern": "legax.dev",
-          "custom_domain": true,
-          "zone_name": "legax.dev"
-        }
-      ]
+      }
     }
   }
 }
