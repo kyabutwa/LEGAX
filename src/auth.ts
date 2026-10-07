@@ -80,7 +80,7 @@ async function startSession(env:AuthEnv,accountId:string){
  const expires=new Date(Date.now()+SESSION_DAYS*86400000);
  const sql=db(env);
  await sql`INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES(${accountId},'ACTIVE',${hash},${expires.toISOString()},now())`;
- return new Response(null,{status:303,headers:{location:"/account","set-cookie":cookie(token)}});
+ return new Response(null,{status:303,headers:{location:"/","set-cookie":cookie(token)}});
 }
 
 export async function currentAccount(env:AuthEnv,request:Request){
@@ -97,7 +97,7 @@ export async function currentAccount(env:AuthEnv,request:Request){
 export async function signOut(env:AuthEnv,request:Request){
  const header=request.headers.get("cookie")||"", token=header.split(";").map(x=>x.trim()).find(x=>x.startsWith(COOKIE+"="))?.slice(COOKIE.length+1);
  if(token){const hash=await tokenHash(token); await db(env)`UPDATE legax.sessions SET state='REVOKED',revoked_at=now() WHERE session_secret_reference=${hash} AND state='ACTIVE'`;}
- return new Response(null,{status:303,headers:{location:"/account","set-cookie":cookie("",0)}});
+ return new Response(null,{status:303,headers:{location:"/","set-cookie":cookie("",0)}});
 }
 
 export function authError(error:unknown){
