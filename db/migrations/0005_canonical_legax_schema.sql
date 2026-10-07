@@ -47,3 +47,35 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+
+-- Repair the active-session invariant after the physical schema rename.
+CREATE OR REPLACE FUNCTION legax.enforce_active_session_account()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  account_state text;
+  identity_state text;
+BEGIN
+  IF NEW.state <> 'ACTIVE' THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT a.state, i.state
+    INTO account_state, identity_state
+    FROM legax.accounts a
+    JOIN legax.identities i ON i.identity_id = a.identity_id
+   WHERE a.account_id = NEW.account_id;
+
+  IF account_state IS DISTINCT FROM 'ACTIVE' THEN
+    RAISE EXCEPTION 'LEGAX_ACTIVE_SESSION_ACCOUNT_NOT_ACTIVE';
+  END IF;
+
+  IF identity_state IS DISTINCT FROM 'ACTIVE' THEN
+    RAISE EXCEPTION 'LEGAX_ACTIVE_SESSION_IDENTITY_NOT_ACTIVE';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
