@@ -93,71 +93,6 @@ jobs:
           }finally{await client.end();}
           NODE
 
-      - name: Database account CTE probe
-        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
-        run: |
-          node --input-type=module <<'NODE'
-          import { Client } from "@neondatabase/serverless";
-          const client=new Client(process.env.DATABASE_URL);
-          const tag=`cte-probe-${Date.now()}`;
-          await client.connect();
-          try{
-            await client.query("BEGIN");
-            const result=await client.query("WITH e AS (INSERT INTO legax.entities(entity_type,canonical_name,display_name,lifecycle_state,effective_from) VALUES($1,$2,$2,$3,now()) RETURNING entity_id), p AS (INSERT INTO legax.persons(entity_id,display_name) SELECT entity_id,$2 FROM e RETURNING entity_id), i AS (INSERT INTO legax.identities(entity_id,identity_type,state,verification_state) SELECT entity_id,'PERSON','ACTIVE','UNVERIFIED' FROM e RETURNING identity_id), a AS (INSERT INTO legax.accounts(identity_id,state) SELECT identity_id,'ACTIVE' FROM i RETURNING account_id,identity_id), c AS (INSERT INTO legax.credentials(account_id,credential_type,state,subject_reference,verification_state,secret_reference) SELECT account_id,'EMAIL_PASSWORD','ACTIVE',$3,'UNVERIFIED','probe-secret' FROM a RETURNING account_id,credential_id), pa AS (UPDATE legax.accounts a SET primary_credential_id=c.credential_id,updated_at=now() FROM c WHERE a.account_id=c.account_id RETURNING a.account_id), s AS (INSERT INTO legax.account_settings(account_id) SELECT account_id FROM pa RETURNING account_id) SELECT account_id FROM s",["PERSON",tag,tag]);
-            console.log("Database account CTE probe passed:",result.rows[0]?.account_id);
-            await client.query("ROLLBACK");
-          }catch(error){
-            try{await client.query("ROLLBACK")}catch{}
-            console.error("DATABASE_ACCOUNT_CTE_PROBE_FAILED",error);
-            throw error;
-          }finally{await client.end();}
-          NODE
-
-      - name: Capture Worker exception diagnostics
-        id: worker_tail
-        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
-        continue-on-error: true
-        background: true
-        run: npx wrangler tail legax --format json --status error --sampling-rate 0.99
-
-      - name: Direct Worker exception probe
-        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
-        run: |
-          set +e
-          EMAIL="legax-probe-$(date +%s)-$RANDOM@example.invalid"
-          PASSWORD="LegaXProbe12345!"
-          export PROBE_EMAIL="$EMAIL"
-          rm -f /tmp/legax-probe-tail.log /tmp/legax-probe-response
-          (timeout 25s npx wrangler tail legax --format json --status error --sampling-rate 0.99 > /tmp/legax-probe-tail.log 2>&1) &
-          TAIL_PID=$!
-          sleep 6
-          STATUS="$(curl -sS -o /tmp/legax-probe-response -w '%{http_code}' --max-time 15 -X POST 'https://legax.kyabutwabis-f.workers.dev/account' -H 'content-type: application/x-www-form-urlencoded' --data-urlencode 'action=create' --data-urlencode 'display_name=LegaX Exception Probe' --data-urlencode "email=$EMAIL" --data-urlencode "password=$PASSWORD")"
-          echo "Direct probe HTTP status: $STATUS"
-          sleep 4
-          kill "$TAIL_PID" 2>/dev/null || true
-          wait "$TAIL_PID" 2>/dev/null || true
-          echo "----- Direct probe response -----"
-          cat /tmp/legax-probe-response
-          echo "----- Worker tail exceptions -----"
-          cat /tmp/legax-probe-tail.log
-          node --input-type=module <<'NODE'
-          import { neon } from "@neondatabase/serverless";
-          const sql=neon(process.env.DATABASE_URL);
-          const email=process.env.PROBE_EMAIL;
-          const rows=await sql`SELECT a.account_id,i.identity_id,e.entity_id FROM legax.accounts a JOIN legax.identities i ON i.identity_id=a.identity_id JOIN legax.entities e ON e.entity_id=i.entity_id JOIN legax.credentials c ON c.account_id=a.account_id WHERE c.credential_type='EMAIL_PASSWORD' AND c.subject_reference=${email} LIMIT 1`;
-          if(rows.length){
-            const {account_id:accountId,identity_id:identityId,entity_id:entityId}=rows[0];
-            await sql`UPDATE legax.accounts SET primary_credential_id=NULL WHERE account_id=${accountId}`;
-            await sql`DELETE FROM legax.sessions WHERE account_id=${accountId}`;
-            await sql`DELETE FROM legax.account_settings WHERE account_id=${accountId}`;
-            await sql`DELETE FROM legax.credentials WHERE account_id=${accountId}`;
-            await sql`DELETE FROM legax.accounts WHERE account_id=${accountId}`;
-            await sql`DELETE FROM legax.persons WHERE entity_id=${entityId}`;
-            await sql`DELETE FROM legax.identities WHERE identity_id=${identityId}`;
-            await sql`DELETE FROM legax.entities WHERE entity_id=${entityId}`;
-            console.log("Direct probe data cleaned up.");
-          }
-          NODE
       - name: Functional account lifecycle verification
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         env:
@@ -226,8 +161,6 @@ jobs:
             }
           }
           NODE
-
-      - cancel: worker_tail
 
       - name: Report deployment configuration
         if: ${{ env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.DATABASE_URL == '' }}
