@@ -1,0 +1,36 @@
+name: LegaX Hardened Runtime
+
+on:
+  workflow_run:
+    workflows: ["LegaX Deploy"]
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-hardened:
+    runs-on: ubuntu-latest
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || secrets.CLOUDFLARE_API_ID || 'dc244234b7ff0a561d16a280e1c948db' }}
+      DATABASE_URL: ${{ secrets.LEGAX_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install
+      - name: Deploy hardened Worker entrypoint
+        run: |
+          printf '%s' "$DATABASE_URL" | npx wrangler secret put DATABASE_URL --env production
+          npx wrangler deploy src/worker.ts --env production
+      - name: Verify public runtime
+        run: |
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/api/health
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/api/database/health
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/join | grep -q "Join as a Participant"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/join | grep -q "Join as a Provider"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "https://legax.kyabutwabis-f.workers.dev/account?intent=participant" | grep -q "Create account"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/
+          echo "Hardened LegaX runtime verification passed."
