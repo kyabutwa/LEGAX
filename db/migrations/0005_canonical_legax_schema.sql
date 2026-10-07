@@ -13,3 +13,37 @@ WHERE contract_id = 1;
 ALTER TABLE legax.runtime_contract
   ADD CONSTRAINT runtime_contract_product_name_chk
   CHECK (product_name = 'LegaX');
+
+-- PostgreSQL function bodies are stored as text and are not rewritten when
+-- a referenced schema is renamed. Repair the canonical account invariant
+-- function so no runtime path retains the removed legacy schema reference.
+CREATE OR REPLACE FUNCTION legax.enforce_account_primary_credential()
+RETURNS trigger
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  credential_account_id uuid;
+BEGIN
+  IF NEW.primary_credential_id IS NULL THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT account_id
+    INTO credential_account_id
+    FROM legax.credentials
+   WHERE credential_id = NEW.primary_credential_id;
+
+  IF credential_account_id IS NULL THEN
+    RAISE EXCEPTION 'Primary credential % does not exist', NEW.primary_credential_id
+      USING ERRCODE = '23503';
+  END IF;
+
+  IF credential_account_id <> NEW.account_id THEN
+    RAISE EXCEPTION 'Primary credential % belongs to account %, not account %',
+      NEW.primary_credential_id, credential_account_id, NEW.account_id
+      USING ERRCODE = '23514';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
