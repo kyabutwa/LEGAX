@@ -1,5 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { authError, type AuthEnv } from "./auth";
+import { renderLegaXPage } from "./ui/page";
 
 type RecoveryEnv = AuthEnv & { RESEND_API_KEY?: string; RESEND_FROM_EMAIL?: string; };
 
@@ -10,8 +11,8 @@ async function tokenHash(token:string){const bytes=new TextEncoder().encode(toke
 function validPassword(password:string){return password.length>=10&&password.length<=200;}
 
 async function sendRecoveryEmail(env:RecoveryEnv,email:string,token:string){
- if(!env.RESEND_API_KEY||!env.RESEND_FROM_EMAIL){console.error("LegaX recovery delivery is not configured");return;}
- const origin=env.RESEND_FROM_EMAIL.includes("@")?"https://legax.kyabutwabis-f.workers.dev":""; 
+ if(!env.RESEND_API_KEY||!env.RESEND_FROM_EMAIL) throw new Error("RECOVERY_DELIVERY_NOT_CONFIGURED");
+ const origin="https://legax.kyabutwabis-f.workers.dev";
  const link=origin+"/account/recovery?token="+encodeURIComponent(token);
  const body={
    from:env.RESEND_FROM_EMAIL,
@@ -35,7 +36,11 @@ export async function requestPasswordRecovery(env:RecoveryEnv,emailInput:string)
      const hash=await tokenHash(token);
      await sql`UPDATE legax.account_recovery_challenges SET state='REVOKED',updated_at=now() WHERE account_id=${rows[0].account_id} AND state='ACTIVE'`;
      await sql`INSERT INTO legax.account_recovery_challenges(account_id,token_hash,state,expires_at,requested_from) VALUES(${rows[0].account_id},${hash},'ACTIVE',now()+interval '30 minutes','web')`;
-     await sendRecoveryEmail(env,email,token);
+     try{ await sendRecoveryEmail(env,email,token); }
+     catch(error){
+       await sql`UPDATE legax.account_recovery_challenges SET state='REVOKED',updated_at=now() WHERE token_hash=${hash} AND state='ACTIVE'`;
+       throw error;
+     }
    }
  }
  return "If an active LegaX account uses that email, a password-reset link has been sent.";
@@ -74,7 +79,7 @@ export async function handleRecovery(request:Request,env:RecoveryEnv):Promise<Re
 function renderRecovery(error:string|null,message:string|null,token:string|null){
  const reset=!!token;
  const content=reset?
- "<section class='account-hero'><p class='eyebrow'>Account recovery</p><h1>Choose a new password</h1><p class='lede'>Create a new password and confirm it before your recovery link can be consumed.</p></section>"+(error?"<div class='auth-error' role='alert'>"+esc(error)+"</div>":"")+"<form method='post' class='auth-card'><input type='hidden' name='action' value='reset'><label>New password<input name='password' type='password' autocomplete='new-password' minlength='10' required></label><label>Confirm new password<input name='password_confirmation' type='password' autocomplete='new-password' minlength='10' required></label><small>Minimum 10 characters. Both passwords must match.</small><button type='submit'>Reset password</button></form>":
- "<section class='account-hero'><p class='eyebrow'>Account recovery</p><h1>Forgot your password?</h1><p class='lede'>Enter your email and LegaX will send a single-use recovery link if an active account uses it.</p></section>"+(error?"<div class='auth-error' role='alert'>"+esc(error)+"</div>":"")+(message?"<div class='account-next'><strong>Check your email</strong><span>"+esc(message)+"</span></div>":"")+"<form method='post' class='auth-card'><input type='hidden' name='action' value='request'><label>Email<input name='email' type='email' autocomplete='email' required></label><button type='submit'>Send recovery link</button></form>";
- return new Response("<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'></head><body>"+content+"<p><a href='/account'>Back to account</a></p></body></html>",{headers:{"content-type":"text/html;charset=utf-8","cache-control":"no-store"}});
+ `<section class="account-hero"><p class="eyebrow">Account recovery</p><h1>Choose a new password</h1><p class="lede">Create a new password and confirm it before your recovery link can be consumed.</p></section>${error?`<div class="auth-error" role="alert">${esc(error)}</div>`:""}<section class="auth-grid recovery-layout"><form method="post" class="auth-card recovery-card"><input type="hidden" name="action" value="reset"><p class="kicker">Secure recovery</p><h2>Set a new password</h2><label>New password<input name="password" type="password" autocomplete="new-password" minlength="10" required></label><label>Confirm new password<input name="password_confirmation" type="password" autocomplete="new-password" minlength="10" required></label><small>Minimum 10 characters. Both passwords must match.</small><button type="submit">Reset password</button></form><aside class="panel recovery-side"><p class="kicker">Recovery contract</p><h2>One-time access.</h2><p>The recovery token is single-use, expires after 30 minutes and revokes active sessions after a successful password reset.</p><a class="button secondary" href="/account">Back to account</a></aside></section>`:
+ `<section class="account-hero"><p class="eyebrow">Account recovery</p><h1>Forgot your password?</h1><p class="lede">Request a single-use recovery link for your LegaX account.</p></section>${error?`<div class="auth-error" role="alert">${esc(error)}</div>`:""}${message?`<section class="account-next recovery-confirm"><strong>Recovery request accepted</strong><span>${esc(message)}</span></section>`:""}<section class="auth-grid recovery-layout"><form method="post" class="auth-card recovery-card"><input type="hidden" name="action" value="request"><p class="kicker">Account access</p><h2>Send recovery link</h2><label>Email<input name="email" type="email" autocomplete="email" required></label><button type="submit">Send recovery link</button></form><aside class="panel recovery-side"><p class="kicker">Privacy</p><h2>No account disclosure.</h2><p>LegaX does not reveal whether an email belongs to an account. A delivery confirmation is shown only after the delivery adapter accepts the request.</p><a class="button secondary" href="/account">Back to account</a></aside></section>`;
+ return renderLegaXPage({title:"Account recovery",active:"Account",content});
 }
