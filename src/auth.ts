@@ -41,7 +41,7 @@ export async function createAccount(env:AuthEnv,input:{email:string,password:str
  const rows=await sql`WITH e AS (
    INSERT INTO legax.entities(entity_type,canonical_name,display_name,lifecycle_state,effective_from)
    VALUES ('PERSON',${name},${name},'ACTIVE',now()) RETURNING entity_id
- ), i AS (
+ ), p AS (\n   INSERT INTO legax.persons(entity_id,display_name) SELECT entity_id,${name} FROM e RETURNING entity_id\n ), i AS (
    INSERT INTO legax.identities(entity_id,identity_type,state,verification_state)
    SELECT entity_id,'PERSON','ACTIVE','UNVERIFIED' FROM e RETURNING identity_id
  ), a AS (
