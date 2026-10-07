@@ -74,7 +74,7 @@ The relevant Neon hierarchy is:
 
 **PROJECT → BRANCH → COMPUTE ENDPOINT → POSTGRES DATABASE/SCHEMAS**
 
-Neon separates durable storage from compute and supports isolated branches, copy-on-write branching, autoscaling and scale-to-zero behavior. Branches are suitable for isolated development, testing, preview and controlled recovery workflows. Production must remain protected and must not be treated as an experimentation environment. citeturn0search1turn0search4turn0search12
+Neon separates durable storage from compute and supports isolated branches, copy-on-write branching, autoscaling and scale-to-zero behavior. Branches are suitable for isolated development, testing, preview and controlled recovery workflows. Production must remain protected and must not be treated as an experimentation environment.
 
 The LegaX architecture therefore treats:
 
@@ -89,7 +89,7 @@ The LegaX architecture therefore treats:
 - **Constraints** as structural integrity enforcement.
 - **Transactions** as atomicity boundaries for operations that genuinely belong in one database transaction.
 
-Neon’s branch model must not be mistaken for Git-style semantic merge. Diverged database states are reconciled through controlled migrations or data operations rather than assuming database branches can be blindly merged. citeturn0search3
+Neon’s branch model must not be mistaken for Git-style semantic merge. Diverged database states are reconciled through controlled migrations or data operations rather than assuming database branches can be blindly merged.
 
 ## 5. Database is not the architecture
 
@@ -276,7 +276,7 @@ Relevant mechanisms include:
 - EXCLUSION constraints where appropriate;
 - generated columns where deterministic derived storage is justified.
 
-PostgreSQL provides these constraint categories as native data-definition mechanisms. Generated columns must obey PostgreSQL's restrictions, including immutable generation expressions and row-local semantics. citeturn0search5turn0search0
+PostgreSQL provides these constraint categories as native data-definition mechanisms. Generated columns must obey PostgreSQL's restrictions, including immutable generation expressions and row-local semantics.
 
 A database constraint should encode an invariant that belongs to persistence.
 
@@ -581,7 +581,7 @@ They are not:
 
 Credential rotation must preserve safe deployment and rollback procedures.
 
-Production and non-production credentials must remain isolated. Neon branch workflows can provide independent credentials for child branches; production credentials must not be reused in development or preview environments. citeturn0search4
+Production and non-production credentials must remain isolated. Neon branch workflows can provide independent credentials for child branches; production credentials must not be reused in development or preview environments.
 
 ## 28. Migration architecture
 
@@ -712,7 +712,7 @@ Likely candidates may include very large:
 
 Partition keys must preserve the semantic query patterns and retention strategy.
 
-PostgreSQL declarative partitioning physically divides one logical table into partitions and can improve performance when access is concentrated in relevant partitions, but poor partition choices can increase planning and operational complexity. citeturn0search6
+PostgreSQL declarative partitioning physically divides one logical table into partitions and can improve performance when access is concentrated in relevant partitions, but poor partition choices can increase planning and operational complexity.
 
 Partitioning must not create multiple semantic sources of truth.
 
@@ -942,7 +942,7 @@ Telemetry is not automatically canonical business truth.
 
 ## 47. Neon compute and scaling
 
-Neon separates compute from durable storage, allowing compute capacity to scale independently of durable data. Current Neon architecture supports autoscaling and scale-to-zero patterns, but application architecture must still account for connection behavior, cold starts, workload bursts and capacity limits. citeturn0search7turn0search12
+Neon separates compute from durable storage, allowing compute capacity to scale independently of durable data. Current Neon architecture supports autoscaling and scale-to-zero patterns, but application architecture must still account for connection behavior, cold starts, workload bursts and capacity limits.
 
 Scaling must therefore be evaluated against:
 
@@ -991,7 +991,7 @@ Define:
 - credential recovery;
 - application compatibility after restore.
 
-Neon branching and restore capabilities can support controlled recovery and migration testing, but recovery is a governed operational process, not merely pressing restore. citeturn0search1turn0search4
+Neon branching and restore capabilities can support controlled recovery and migration testing, but recovery is a governed operational process, not merely pressing restore.
 
 A restored database must be verified before being declared authoritative.
 
@@ -1024,7 +1024,7 @@ Branches should be created for:
 
 Production should be protected from casual experimentation.
 
-Where production data contains sensitive information, non-production environments must use appropriate data minimization/anonymization controls before exposing data to broader development contexts. Neon documents separate branching patterns for production, staging and PII-sensitive environments. citeturn0search4
+Where production data contains sensitive information, non-production environments must use appropriate data minimization/anonymization controls before exposing data to broader development contexts. Neon documents separate branching patterns for production, staging and PII-sensitive environments.
 
 ## 52. Branch lineage
 
