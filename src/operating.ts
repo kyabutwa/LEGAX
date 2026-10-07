@@ -5,7 +5,7 @@ import { renderLegaXPage } from "./ui/page";
 type Kind="community"|"provider"|"organization";
 function db(env:AuthEnv){if(!env.DATABASE_URL)throw new Error("DATABASE_NOT_CONFIGURED");return neon(env.DATABASE_URL);}
 function esc(v:string){return v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]||c));}
-function page(title:string,active:string,content:string){return renderLegaXPage({title,active,content});}
+function page(title:string,active:any,content:string){return renderLegaXPage({title,active,content});}
 function shell(title:string,eyebrow:string,lede:string,body:string){return `<section class="page-hero"><p class="eyebrow">${esc(eyebrow)}</p><h1>${esc(title)}</h1><p class="lede">${lede}</p></section>${body}<style>.ops-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.ops-card{display:flex;flex-direction:column;gap:8px;padding:20px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}.ops-card strong{font-size:18px}.ops-card span{color:var(--muted);line-height:1.45}.ops-card b{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim)}.ops-form{max-width:720px;padding:22px;border:1px solid var(--line);border-radius:22px;background:var(--surface)}.ops-form label{display:grid;gap:7px;margin:14px 0}.ops-form input,.ops-form textarea,.ops-form select{width:100%;box-sizing:border-box;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:rgba(0,0,0,.12);color:var(--text)}.ops-form button{margin-top:8px}.notice{padding:14px 16px;border:1px solid var(--line);border-radius:14px;margin:14px 0;background:rgba(255,255,255,.03)}@media(max-width:820px){.ops-grid{grid-template-columns:1fr}}
 </style>`;}
 
@@ -46,7 +46,7 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
 }
 
 async function createContext(env:AuthEnv,account:any,path:string,name:string):Promise<Response>{
- if(name.length<2||name.length>160) return page("Create context","Account",shell("Name required","Governed context","Enter a clear name for the context.","<section class=notice>Use at least 2 characters.</section><a class=button href="+JSON.stringify(path)+">Back</a>"));
+ if(name.length<2||name.length>160) return page("Create context","Account",shell("Name required","Governed context","Enter a clear name for the context(),","<section class=notice>Use at least 2 characters.</section><a class=button href=\""+esc(path)+"\">Back</a>"));
  const kind:Kind=path==="/providers"?"provider":path==="/organizations"?"organization":"community";
  const sql=db(env);
  const identity=await sql`SELECT i.identity_id,i.entity_id FROM legax.accounts a JOIN legax.identities i ON i.identity_id=a.identity_id WHERE a.account_id=${account.account_id} LIMIT 1`;
