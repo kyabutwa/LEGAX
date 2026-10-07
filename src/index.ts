@@ -15,8 +15,8 @@ function json(data:unknown,requestId:string,status=200):Response{
 }
 
 export default {async fetch(request:Request,env:Env):Promise<Response>{
+ let context=createRequestContext(request); let url=new URL(request.url);
  try {
- const context=createRequestContext(request); const url=new URL(request.url);
  if(url.pathname==="/account" || url.pathname==="/account/") return handleAccountEntry(request,env);
  if(url.pathname==="/join" || url.pathname==="/join/") return renderJoin();
  if(url.pathname==="/onboarding" || url.pathname==="/onboarding/") return handleOnboarding(request,env);
