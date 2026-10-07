@@ -1,6 +1,6 @@
 import { neon, Client } from "@neondatabase/serverless";
 
-export interface AuthEnv { DATABASE_URL?: string }
+export interface AuthEnv { DATABASE_URL?: string; RESEND_API_KEY?: string; RESEND_FROM_EMAIL?: string }
 
 const COOKIE="legax_session";
 const SESSION_DAYS=30;
@@ -29,10 +29,11 @@ function validEmail(email:string){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email
 function validPassword(password:string){return password.length>=10 && password.length<=200;}
 function cookie(token:string,maxAge=SESSION_DAYS*86400){return `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${maxAge}`;}
 
-export async function createAccount(env:AuthEnv,input:{email:string,password:string,displayName:string}){
+export async function createAccount(env:AuthEnv,input:{email:string,password:string,passwordConfirmation:string,displayName:string}){
  const email=input.email.trim().toLowerCase(), name=input.displayName.trim();
  if(!validEmail(email)) throw new Error("INVALID_EMAIL");
  if(!validPassword(input.password)) throw new Error("PASSWORD_TOO_WEAK");
+ if(input.password!==input.passwordConfirmation) throw new Error("PASSWORD_CONFIRMATION_MISMATCH");
  if(name.length<1||name.length>120) throw new Error("INVALID_DISPLAY_NAME");
 
  const sql=db(env);
@@ -40,70 +41,23 @@ export async function createAccount(env:AuthEnv,input:{email:string,password:str
  if(existing.length) throw new Error("ACCOUNT_ALREADY_EXISTS");
 
  const secret=await passwordHash(input.password);
- const entityId=crypto.randomUUID();
- const identityId=crypto.randomUUID();
- const accountId=crypto.randomUUID();
- const credentialId=crypto.randomUUID();
-
- await sql.transaction([
-   sql`INSERT INTO legax.entities(entity_id,entity_type,canonical_name,display_name,lifecycle_state,effective_from)
-        VALUES(${entityId},'PERSON',${name},${name},'ACTIVE',now())`,
-   sql`INSERT INTO legax.persons(entity_id,display_name)
-        VALUES(${entityId},${name})`,
-   sql`INSERT INTO legax.identities(identity_id,entity_id,identity_type,state,verification_state)
-        VALUES(${identityId},${entityId},'PERSON','ACTIVE','UNVERIFIED')`,
-   sql`INSERT INTO legax.accounts(account_id,identity_id,state)
-        VALUES(${accountId},${identityId},'ACTIVE')`,
-   sql`INSERT INTO legax.credentials(credential_id,account_id,credential_type,state,subject_reference,verification_state,secret_reference)
-        VALUES(${credentialId},${accountId},'EMAIL_PASSWORD','ACTIVE',${email},'UNVERIFIED',${secret})`,
-   sql`UPDATE legax.accounts
-        SET primary_credential_id=${credentialId},updated_at=now()
-        WHERE account_id=${accountId}`,
-   sql`INSERT INTO legax.account_settings(account_id)
-        VALUES(${accountId})`,
- ]);
-
- return startSession(env,accountId);
-}
-
-export async function signIn(env:AuthEnv,input:{email:string,password:string}){
- const email=input.email.trim().toLowerCase();
- const sql=db(env);
- const rows=await sql`SELECT a.account_id,c.secret_reference FROM legax.accounts a JOIN legax.credentials c ON c.account_id=a.account_id WHERE a.state='ACTIVE' AND c.state='ACTIVE' AND c.credential_type='EMAIL_PASSWORD' AND lower(c.subject_reference)=${email} LIMIT 1`;
- if(!rows.length || !(await passwordVerify(input.password,String(rows[0].secret_reference)))) throw new Error("INVALID_CREDENTIALS");
- await sql`UPDATE legax.accounts SET last_authenticated_at=now(),updated_at=now() WHERE account_id=${rows[0].account_id}`;
- return startSession(env,rows[0].account_id as string);
-}
-
-async function startSession(env:AuthEnv,accountId:string){
- const token=b64(crypto.getRandomValues(new Uint8Array(32)));
- const hash=await tokenHash(token);
- const expires=new Date(Date.now()+SESSION_DAYS*86400000);
- const sql=db(env);
- await sql`INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES(${accountId},'ACTIVE',${hash},${expires.toISOString()},now())`;
- return new Response(null,{status:303,headers:{location:"/account", "set-cookie":cookie(token)}});
-}
-
-export async function currentAccount(env:AuthEnv,request:Request){
- const header=request.headers.get("cookie")||"";
- const token=header.split(";").map(x=>x.trim()).find(x=>x.startsWith(COOKIE+"="))?.slice(COOKIE.length+1);
- if(!token) return null;
- const hash=await tokenHash(token), sql=db(env);
- const rows=await sql`SELECT a.account_id,e.display_name,i.verification_state,a.state,s.expires_at FROM legax.sessions s JOIN legax.accounts a ON a.account_id=s.account_id JOIN legax.identities i ON i.identity_id=a.identity_id JOIN legax.entities e ON e.entity_id=i.entity_id WHERE s.session_secret_reference=${hash} AND s.state='ACTIVE' AND a.state='ACTIVE' AND s.expires_at>now() LIMIT 1`;
- if(!rows.length) return null;
- await sql`UPDATE legax.sessions SET last_seen_at=now() WHERE session_secret_reference=${hash}`;
- return rows[0];
-}
-
-export async function signOut(env:AuthEnv,request:Request){
- const header=request.headers.get("cookie")||"", token=header.split(";").map(x=>x.trim()).find(x=>x.startsWith(COOKIE+"="))?.slice(COOKIE.length+1);
- if(token){const hash=await tokenHash(token); await db(env)`UPDATE legax.sessions SET state='REVOKED',revoked_at=now() WHERE session_secret_reference=${hash} AND state='ACTIVE'`;}
- return new Response(null,{status:303,headers:{location:"/account","set-cookie":cookie("",0)}});
-}
-
-export function authError(error:unknown){
- const code=error instanceof Error?error.message:"AUTH_ERROR";
- console.error("LegaX account operation failed", error);
- const messages:Record<string,string>={INVALID_EMAIL:"Enter a valid email address.",PASSWORD_TOO_WEAK:"Use a password of at least 10 characters.",INVALID_DISPLAY_NAME:"Enter your name.",ACCOUNT_ALREADY_EXISTS:"An account already exists for this email.",INVALID_CREDENTIALS:"Email or password is incorrect.",ACCOUNT_CREATE_FAILED:"The account could not be created."};
- return messages[code]||"The account operation could not be completed.";
-}
+ const entityId=crypto.randomUUID(),identityId=crypto.randomUUID(),accountId=crypto.randomUUID(),credentialId=crypto.randomUUID();
+ const rows=await sql`WITH e AS (
+   INSERT INTO legax.entities(entity_id,entity_type,canonical_name,display_name,lifecycle_state,effective_from)
+   VALUES(${entityId},'PERSON',${name},${name},'ACTIVE',now()) RETURNING entity_id
+ ), p AS (
+   INSERT INTO legax.persons(entity_id,display_name) SELECT entity_id,${name} FROM e RETURNING entity_id
+ ), i AS (
+   INSERT INTO legax.identities(identity_id,entity_id,identity_type,state,verification_state)
+   SELECT ${identityId},entity_id,'PERSON','ACTIVE','UNVERIFIED' FROM p RETURNING identity_id
+ ), a AS (
+   INSERT INTO legax.accounts(account_id,identity_id,state)
+   SELECT ${accountId},identity_id,'ACTIVE' FROM i RETURNING account_id
+ ), c AS (
+   INSERT INTO legax.credentials(credential_id,account_id,credential_type,state,subject_reference,verification_state,secret_reference)
+   SELECT ${credentialId},account_id,'EMAIL_PASSWORD','ACTIVE',${email},'UNVERIFIED',${secret} FROM a RETURNING credential_id,account_id
+ ), pa AS (
+   UPDATE legax.accounts SET primary_credential_id=${credentialId},updated_at=now() WHERE account_id=${accountId} RETURNING account_id
+ )
+ INSERT INTO legax.account_settings(account_id) SELECT account_id FROM pa RETURNING account_id`;
+ if(!rows.length) throw new Error("ACCOUNT_CREATE_FAILED");
