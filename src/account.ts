@@ -8,7 +8,7 @@ export async function handleAccount(request:Request,env:AuthEnv):Promise<Respons
  try{
   if(request.method==="POST"){
    const form=await request.formData(), action=String(form.get("action")||"");
-   if(action==="create") return createAccount(env,{email:String(form.get("email")||""),password:String(form.get("password")||""),displayName:String(form.get("display_name")||"")});
+   if(action==="create") return createAccount(env,{email:String(form.get("email")||""),password:String(form.get("password")||""),passwordConfirmation:String(form.get("password_confirmation")||""),displayName:String(form.get("display_name")||"")});
    if(action==="signin") return signIn(env,{email:String(form.get("email")||""),password:String(form.get("password")||"")});
    if(action==="signout") return signOut(env,request);
   }
@@ -32,7 +32,7 @@ function renderAccount(account:any,error:string|null):Response{
  <section class="account-hero"><p class="eyebrow">Account</p><h1>Enter LegaX</h1><p class="lede">Create an account or sign in. Your account establishes authentication; it does not automatically create participation, authority or access.</p></section>
  ${error?`<div class="auth-error" role="alert">${esc(error)}</div>`:""}
  <section class="auth-grid">
-  <form method="post" class="auth-card"><input type="hidden" name="action" value="create"><p class="kicker">New here</p><h2>Create account</h2><label>Name<input name="display_name" autocomplete="name" required maxlength="120"></label><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Password<input name="password" type="password" autocomplete="new-password" minlength="10" required><small>Minimum 10 characters.</small></label><button type="submit">Create account</button></form>
+  <form method="post" class="auth-card"><input type="hidden" name="action" value="create"><p class="kicker">New here</p><h2>Create account</h2><label>Name<input name="display_name" autocomplete="name" required maxlength="120"></label><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Password<input name="password" type="password" autocomplete="new-password" minlength="10" required><small>Minimum 10 characters.</small></label><label>Confirm password<input name="password_confirmation" type="password" autocomplete="new-password" minlength="10" required><small>Enter the same password again.</small></label><button type="submit">Create account</button></form>
   <form method="post" class="auth-card"><input type="hidden" name="action" value="signin"><p class="kicker">Already have one</p><h2>Sign in</h2><label>Email<input name="email" type="email" autocomplete="email" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button type="submit">Sign in</button><span class="recovery-note">Password recovery will use the canonical recovery flow once the outbound delivery adapter is enabled.</span></form>
  </section>
  <section class="account-next"><strong>What happens after authentication?</strong><span>Identity → account → active context → governed authorization. A successful sign-in is never treated as permission to perform consequential actions.</span></section>`;
