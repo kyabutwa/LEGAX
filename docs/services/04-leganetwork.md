@@ -26,7 +26,7 @@ Every managed endpoint must have a governed identity relationship, lifecycle, cr
 
 ### Zero-trust service interaction
 
-Service-to-service calls require authenticated service identity and authorization. Network location must not be used as the sole basis for trust. NIST SP 800-207A explicitly shifts cloud-native access control toward application/service identities and granular authorization. citeturn0search6
+Service-to-service calls require authenticated service identity and authorization. Network location must not be used as the sole basis for trust. NIST SP 800-207A explicitly shifts cloud-native access control toward application/service identities and granular authorization.
 
 ### Provisioning
 
