@@ -52,6 +52,20 @@ jobs:
             echo "::warning::legax.dev does not currently resolve from the GitHub Actions runner; Workers deployment and workers.dev UI routes are verified, but custom-domain DNS remains an external configuration gate."
           fi
 
+      - name: Database legacy runtime reference scan
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { Client } from "@neondatabase/serverless";
+          const client=new Client(process.env.DATABASE_URL);
+          await client.connect();
+          try{
+            const rows=(await client.query("SELECT n.nspname AS schema_name,p.proname AS function_name,p.prosrc AS function_source FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='legax' AND p.prosrc ILIKE '%legakeys.%'")).rows;
+            if(rows.length){ console.error("LEGACY_RUNTIME_REFERENCES_FOUND",rows.map(r=>({schema:r.schema_name,function:r.function_name,source:r.function_source}))); throw new Error("Legacy runtime references remain in canonical functions"); }
+            console.log("Database legacy runtime reference scan passed.");
+          }finally{await client.end();}
+          NODE
+
       - name: Database account transaction probe
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         run: |
