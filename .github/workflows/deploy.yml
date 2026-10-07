@@ -113,6 +113,14 @@ jobs:
           }finally{await client.end();}
           NODE
 
+      - name: Capture Worker exception diagnostics
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
+        run: |
+          rm -f /tmp/legax-tail.jsonl
+          (timeout 45s npx wrangler tail legax --env production --format json --status error --sampling-rate 1 > /tmp/legax-tail.jsonl 2>&1) &
+          echo $! > /tmp/legax-tail.pid
+          sleep 5
+
       - name: Functional account lifecycle verification
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         env:
@@ -181,6 +189,11 @@ jobs:
             }
           }
           NODE
+          sleep 5
+          if [ -f /tmp/legax-tail.jsonl ]; then
+            echo "----- Cloudflare Worker exception diagnostics -----"
+            cat /tmp/legax-tail.jsonl
+          fi
 
       - name: Report deployment configuration
         if: ${{ env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.DATABASE_URL == '' }}
