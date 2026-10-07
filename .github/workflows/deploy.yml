@@ -34,6 +34,12 @@ jobs:
         run: |
           printf '%s' "$DATABASE_URL" | npx wrangler secret put DATABASE_URL --env production
           npx wrangler deploy --env production
+      - name: Verify deployed Worker
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
+        run: |
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/api/health
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/api/database/health
+
       - name: Report deployment configuration
         if: ${{ env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.DATABASE_URL == '' }}
         run: echo "Cloudflare deployment skipped because required deployment secrets are not configured."
