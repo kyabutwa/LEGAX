@@ -243,7 +243,7 @@ Typical components:
 
 Avoid creating giant universal aggregates.
 
-**SERVICE MODEL ≠ ENTIRE LEGAX DOMAIN MODEL**
+**SERVICE MODEL ≠ ENTIRE LegaX DOMAIN MODEL**
 
 ## 10. Aggregate and consistency boundary
 
