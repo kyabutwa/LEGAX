@@ -2,6 +2,7 @@ import { readCanonicalDatabaseStatus } from "./data/database";
 import { CORE_RULES } from "./core/contracts";
 import { createRequestContext } from "./core/runtime";
 import { problem } from "./http/problem";
+import { renderAppShell } from "./ui/app-shell";
 
 export interface Env {
   ENVIRONMENT: string;
@@ -23,6 +24,10 @@ export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const context = createRequestContext(request);
     const url = new URL(request.url);
+
+    if (request.method === "GET" && url.pathname === "/") {
+      return renderAppShell();
+    }
 
     if (request.method === "GET" && url.pathname === "/api/health") {
       return json({
