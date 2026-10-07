@@ -965,7 +965,7 @@ Trace context should propagate across:
 
 **API → ENGINE → QUEUE → WORKER → PROVIDER → CALLBACK → RECONCILIATION**
 
-OpenTelemetry provides semantic conventions for spans, events, metrics, logs, messaging, RPC and related operations; these conventions support consistent correlation across distributed execution. citeturn0search0turn0search1turn0search6
+OpenTelemetry provides semantic conventions for spans, events, metrics, logs, messaging, RPC and related operations; these conventions support consistent correlation across distributed execution.
 
 Observability must not become a source of unauthorized data exposure.
 
@@ -1351,7 +1351,7 @@ The engine MUST distinguish:
 - exactly-once local database commit;
 - uncertain external side effects.
 
-Industry durable-execution systems demonstrate that durable workflow state, task retries, event history and idempotent activities can provide strong execution guarantees, but external operations still require explicit idempotency and reconciliation. Temporal documents durable event history, task retries and idempotency patterns; AWS Step Functions similarly distinguishes execution guarantees by workflow type. citeturn1search3turn1search2turn1search1turn0search4
+Industry durable-execution systems demonstrate that durable workflow state, task retries, event history and idempotent activities can provide strong execution guarantees, but external operations still require explicit idempotency and reconciliation. Temporal documents durable event history, task retries and idempotency patterns; AWS Step Functions similarly distinguishes execution guarantees by workflow type.
 
 LegaX must never advertise a stronger guarantee than the actual boundary supports.
 
