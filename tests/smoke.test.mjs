@@ -38,7 +38,7 @@ test("Phase 33 canonical runtime and account entry are wired",async()=>{
  assert.match(onboarding,/legax\.participations/);
  assert.match(onboarding,/legax\.participants/);
  assert.match(landing,/Choose your LegaX path/);
- assert.match(landing,/real account/);
+ assert.match(landing,/real LegaX account/);
  assert.doesNotMatch(landing,/dashboard|social proof|testimonials/i);
 });
 
