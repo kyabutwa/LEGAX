@@ -14,6 +14,7 @@ function json(data:unknown,requestId:string,status=200):Response{
 
 export default {async fetch(request:Request,env:Env):Promise<Response>{
  const context=createRequestContext(request); const url=new URL(request.url);
+ try {
  if(url.pathname==="/account" || url.pathname==="/account/") return handleAccount(request,env);
  if(request.method==="GET" && url.pathname==="/") return renderLandingPage();
  if(request.method==="GET" && !url.pathname.startsWith("/api/")) return renderControlPlane(url.pathname);
@@ -25,4 +26,23 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  if(request.method==="GET" && url.pathname==="/api/runtime-contract") return json({phase:33,state:"IMPLEMENTED_FOUNDATION",rules:CORE_RULES,canonicalFlow:"REQUEST → AUTHENTICATION → CONTEXT → AUTHORIZATION → COMMAND → CORE EXECUTION → EVENT → EVIDENCE",deferredUntilCanonicalDependencies:["authentication","authorization-runtime","core-execution"]},context.requestId);
  if(url.pathname.startsWith("/api/")) return problem(context.requestId,501,"CAPABILITY_NOT_IMPLEMENTED","Capability not implemented","This endpoint is intentionally unavailable until its canonical domain contract and runtime dependencies are implemented.");
  return problem(context.requestId,404,"NOT_FOUND","Not found","The requested resource does not exist.");
+ } catch(error) {
+   console.error("LegaX Worker request failed", {
+     requestId: context.requestId,
+     method: request.method,
+     pathname: url.pathname,
+     error
+   });
+   return new Response(JSON.stringify({
+     type:"about:blank",
+     title:"Internal Server Error",
+     status:500,
+     requestId:context.requestId
+   }),{status:500,headers:{
+     "content-type":"application/json; charset=utf-8",
+     "cache-control":"no-store",
+     "x-request-id":context.requestId,
+     "x-legax-runtime-error":"true"
+   }});
+ }
 }};
