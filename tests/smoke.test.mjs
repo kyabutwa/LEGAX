@@ -15,6 +15,8 @@ test("Phase 33 canonical runtime and account entry are wired",async()=>{
  const onboarding=await read("../src/onboarding-entry.ts");
  const landing=await read("../src/ui/landing.ts");
  const home=await read("../src/ui/authenticated-home.ts");
+ const operating=await read("../src/operating.ts");
+ const onboardingEntry=await read("../src/onboarding-entry.ts");
  const entrypoint=await read("../wrangler.jsonc");
  const index=await read("../src/index.ts");
  assert.match(contracts,/noAuthorizationNoConsequentialAction:\s*true/);
@@ -51,6 +53,15 @@ test("Phase 33 canonical runtime and account entry are wired",async()=>{
  assert.match(landing,/real LegaX account/);
  assert.match(home,/Authenticated LegaX home/);
  assert.match(home,/Join as a Participant/);
+ assert.match(home,/Live operating state/);
+ assert.match(home,/public_products/);
+ assert.match(operating,/commerce_products/);
+ assert.match(operating,/commerce_availability/);
+ assert.match(operating,/commerce_fulfillments/);
+ assert.match(operating,/provider_profiles/);
+ assert.match(operating,/organization_profiles/);
+ assert.match(operating,/Request to join/);
+ assert.match(onboardingEntry,/action=\\"create-context\\"/);
  assert.match(index,/export \{ default \} from ".\/worker"/);
  assert.match(entrypoint,/"main": "src\/worker.ts"/);
  assert.doesNotMatch(landing,/dashboard|social proof|testimonials|Choose your LegaX path/i);
