@@ -1,1 +1,0 @@
-{"name":"legax","private":true,"packageManager":"pnpm@10","scripts":{"check":"node scripts/foundation-check.mjs"}}
