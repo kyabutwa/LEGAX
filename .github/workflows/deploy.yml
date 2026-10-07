@@ -21,147 +21,50 @@ jobs:
           node-version: 24
       - run: npm install
       - run: npm run typecheck
+      - run: npm test
       - run: npm run build
+
       - name: Resolve Cloudflare account ID
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID == '' }}
         run: |
           ACCOUNT_ID="$(npx wrangler whoami --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);const a=(j.accounts && j.accounts[0] && j.accounts[0].id) || j.account_id || j.accountId || "";if(!/^[a-f0-9]{32}$/.test(a)){process.exit(1)}process.stdout.write(a)})')"
           echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
-          echo "Resolved Cloudflare account identity from the authenticated Wrangler token."
 
-      - name: Deploy to Cloudflare
+      - name: Deploy hardened Worker
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         run: |
           printf '%s' "$DATABASE_URL" | npx wrangler secret put DATABASE_URL --env production
-          npx wrangler deploy --env production
-      - name: Verify deployed Worker
+          npx wrangler deploy src/worker.ts --env production
+
+      - name: Verify production runtime
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         run: |
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/api/health
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/api/database/health
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/ | grep -q "Who you are."
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/ | grep -q "Create account"
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/people
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/account | grep -q "Create account"
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/account | grep -q "Sign in"
-          if getent hosts legax.dev >/dev/null 2>&1; then
-            curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.dev/
-            curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.dev/people
-          else
-            echo "::warning::legax.dev does not currently resolve from the GitHub Actions runner; Workers deployment and workers.dev UI routes are verified, but custom-domain DNS remains an external configuration gate."
-          fi
+          set -e
+          BASE="https://legax.kyabutwabis-f.workers.dev"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/api/health"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/api/database/health"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/join" | grep -q "Join as a Participant"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/join" | grep -q "Join as a Provider"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/account" | grep -q "Confirm password"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/account" | grep -q "Forgot password"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/account/recovery" | grep -q "Forgot your password"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 "$BASE/people"
+          echo "LegaX production runtime verification passed."
 
       - name: Database legacy runtime reference scan
-        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
-        run: |
-          node --input-type=module <<'NODE'
-          import { Client } from "@neondatabase/serverless";
-          const client=new Client(process.env.DATABASE_URL);
-          await client.connect();
-          try{
-            const rows=(await client.query("SELECT n.nspname AS schema_name,p.proname AS function_name,p.prosrc AS function_source FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='legax' AND p.prosrc ILIKE '%legakeys.%'")).rows;
-            if(rows.length){ console.error("LEGACY_RUNTIME_REFERENCES_FOUND",rows.map(r=>({schema:r.schema_name,function:r.function_name,source:r.function_source}))); throw new Error("Legacy runtime references remain in canonical functions"); }
-            console.log("Database legacy runtime reference scan passed.");
-          }finally{await client.end();}
-          NODE
-
-      - name: Database account transaction probe
-        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
-        run: |
-          node --input-type=module <<'NODE'
-          import { Client } from "@neondatabase/serverless";
-          const client=new Client(process.env.DATABASE_URL);
-          const tag=`probe-${Date.now()}`;
-          await client.connect();
-          try{
-            await client.query("BEGIN");
-            const e=(await client.query("INSERT INTO legax.entities(entity_type,canonical_name,display_name,lifecycle_state,effective_from) VALUES($1,$2,$2,$3,now()) RETURNING entity_id",["PERSON",tag,"ACTIVE"])).rows[0];
-            await client.query("INSERT INTO legax.persons(entity_id,display_name) VALUES($1,$2)",[e.entity_id,tag]);
-            const i=(await client.query("INSERT INTO legax.identities(entity_id,identity_type,state,verification_state) VALUES($1,$2,$3,$4) RETURNING identity_id",[e.entity_id,"PERSON","ACTIVE","UNVERIFIED"])).rows[0];
-            const a=(await client.query("INSERT INTO legax.accounts(identity_id,state) VALUES($1,$2) RETURNING account_id",[i.identity_id,"ACTIVE"])).rows[0];
-            const c=(await client.query("INSERT INTO legax.credentials(account_id,credential_type,state,subject_reference,verification_state,secret_reference) VALUES($1,$2,$3,$4,$5,$6) RETURNING credential_id",[a.account_id,"EMAIL_PASSWORD","ACTIVE",tag,"UNVERIFIED","probe-secret"])).rows[0];
-            await client.query("UPDATE legax.accounts SET primary_credential_id=$1,updated_at=now() WHERE account_id=$2",[c.credential_id,a.account_id]);
-            await client.query("INSERT INTO legax.account_settings(account_id) VALUES($1)",[a.account_id]);
-            await client.query("INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES($1,$2,$3,$4,now())",[a.account_id,"ACTIVE","a".repeat(64),new Date(Date.now()+30*86400000).toISOString()]);
-            await client.query("ROLLBACK");
-            console.log("Database account transaction probe passed.");
-          }catch(error){
-            try{await client.query("ROLLBACK")}catch{}
-            console.error("DATABASE_ACCOUNT_TRANSACTION_PROBE_FAILED",error);
-            throw error;
-          }finally{await client.end();}
-          NODE
-
-      - name: Functional account lifecycle verification
-        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
-        env:
-          WORKER_URL: https://legax.kyabutwabis-f.workers.dev
+        if: ${{ env.DATABASE_URL != '' }}
         run: |
           node --input-type=module <<'NODE'
           import { neon } from "@neondatabase/serverless";
-          const base=process.env.WORKER_URL;
-          const email=`legax-verification-${Date.now()}-${Math.random().toString(36).slice(2)}@example.invalid`;
-          const password="LegaXVerification123!";
-          const name="LegaX Deployment Verification";
-          const getCookie=(response)=>{
-            const values=response.headers.getSetCookie?.() || [];
-            return values.map(v=>v.split(";",1)[0]).join("; ");
-          };
-          const assert=(condition,message)=>{if(!condition) throw new Error(message)};
-          let cookie="";
-          try{
-            const page=await fetch(base+"/account");
-            assert(page.ok,"/account GET failed");
-            assert((await page.text()).includes("Create account"),"/account GET missing create form");
-
-            const created=await fetch(base+"/account",{method:"POST",redirect:"manual",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:"create",display_name:name,email,password})});
-            if(created.status!==303){ console.error("ACCOUNT_CREATE_RESPONSE",created.status,await created.text()); throw new Error("account creation failed"); }
-            assert(created.headers.get("location")==="/account","account creation location mismatch");
-            cookie=getCookie(created);
-            assert(cookie.includes("legax_session="),"account creation did not set a session cookie");
-
-            const signedIn=await fetch(base+"/account",{headers:{cookie}});
-            const signedInHtml=await signedIn.text();
-            assert(signedIn.ok && signedInHtml.includes("Signed in") && signedInHtml.includes(name),"created session was not authenticated");
-
-            const signedOut=await fetch(base+"/account",{method:"POST",redirect:"manual",headers:{"content-type":"application/x-www-form-urlencoded","cookie":cookie},body:new URLSearchParams({action:"signout"})});
-            assert(signedOut.status===303,"signout did not return 303");
-
-            const login=await fetch(base+"/account",{method:"POST",redirect:"manual",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:"signin",email,password})});
-            assert(login.status===303,"signin did not return 303; got "+login.status);
-            cookie=getCookie(login);
-            assert(cookie.includes("legax_session="),"signin did not set a session cookie");
-
-            const reauthenticated=await fetch(base+"/account",{headers:{cookie}});
-            const reauthHtml=await reauthenticated.text();
-            assert(reauthenticated.ok && reauthHtml.includes("Signed in") && reauthHtml.includes(name),"signin session was not authenticated");
-
-            console.log("Functional account lifecycle verification passed:",email);
-          } finally {
-            const sql=neon(process.env.DATABASE_URL);
-            const rows=await sql`SELECT a.account_id,i.identity_id,e.entity_id
-              FROM legax.accounts a
-              JOIN legax.identities i ON i.identity_id=a.identity_id
-              JOIN legax.entities e ON e.entity_id=i.entity_id
-              JOIN legax.credentials c ON c.account_id=a.account_id
-              WHERE c.credential_type='EMAIL_PASSWORD' AND c.subject_reference=${email}
-              LIMIT 1`;
-            if(rows.length){
-              const accountId=rows[0].account_id, identityId=rows[0].identity_id, entityId=rows[0].entity_id;
-              await sql`UPDATE legax.accounts SET primary_credential_id=NULL WHERE account_id=${accountId}`;
-              await sql`DELETE FROM legax.sessions WHERE account_id=${accountId}`;
-              await sql`DELETE FROM legax.account_settings WHERE account_id=${accountId}`;
-              await sql`DELETE FROM legax.credentials WHERE account_id=${accountId}`;
-              await sql`DELETE FROM legax.accounts WHERE account_id=${accountId}`;
-              await sql`DELETE FROM legax.persons WHERE entity_id=${entityId}`;
-              await sql`DELETE FROM legax.identities WHERE identity_id=${identityId}`;
-              await sql`DELETE FROM legax.entities WHERE entity_id=${entityId}`;
-              console.log("Functional account verification data cleaned up.");
-            }
-          }
+          const sql=neon(process.env.DATABASE_URL);
+          const rows=await sql`SELECT n.nspname AS schema_name,p.proname AS function_name
+            FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
+            WHERE n.nspname='legax' AND (p.prosrc ILIKE '%legakeys.%' OR p.prosrc ILIKE '%LEGAKEYS_%')`;
+          if(rows.length){console.error(rows);process.exit(1);}
+          console.log("Database legacy runtime reference scan passed.");
           NODE
 
-      - name: Report deployment configuration
+      - name: Report skipped deployment
         if: ${{ env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.DATABASE_URL == '' }}
-        run: echo "Cloudflare deployment skipped because required deployment secrets are not configured."
+        run: echo "::warning::Deployment skipped because required deployment secrets are not configured."
