@@ -509,7 +509,7 @@ A model receives the minimum authorized information needed for the capability.
 
 ## 36. Model/provider boundary
 
-**INTELLIGENCE REQUEST → LEGAX AUTHORIZATION → MODEL ROUTER → PROVIDER ADAPTER → EXTERNAL MODEL → PROVIDER RESPONSE → VALIDATION → INTELLIGENCE OUTPUT**
+**INTELLIGENCE REQUEST → LegaX AUTHORIZATION → MODEL ROUTER → PROVIDER ADAPTER → EXTERNAL MODEL → PROVIDER RESPONSE → VALIDATION → INTELLIGENCE OUTPUT**
 
 Provider output is a provider assertion/output, not automatically canonical truth.
 
