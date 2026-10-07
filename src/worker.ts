@@ -4,7 +4,7 @@ import { createRequestContext } from "./core/runtime";
 import { problem } from "./http/problem";
 import { renderControlPlane } from "./ui/control-plane";
 import { renderLandingPage } from "./ui/landing";
-import { handleAccountEntry } from "./account-entry";
+import { handleAccountEntry } from "./account-entry-safe";
 import { renderJoin } from "./join";
 import { handleOnboarding } from "./onboarding-entry";
 export interface Env { ENVIRONMENT:string; DATABASE_URL?:string; }
