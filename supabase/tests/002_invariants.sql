@@ -1,0 +1,16 @@
+begin;
+select plan(12);
+select ok((select relrowsecurity from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='core' and c.relname='accounts'),'RLS enabled');
+select ok(not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname in ('core','lifecycle','audit') and c.relkind='r' and not c.relrowsecurity),'every domain table has RLS');
+select ok(not exists(select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname in ('core','lifecycle','audit') and c.relkind='r' and not exists(select 1 from pg_policies p where p.schemaname=n.nspname and p.tablename=c.relname and p.policyname='legax_gate02_deny_all')),'every domain table has explicit deny policy');
+select ok(exists(select 1 from pg_constraint where conrelid='lifecycle.transition_requests'::regclass and contype='u'),'transition idempotency constraint');
+select ok(exists(select 1 from pg_constraint where conrelid='lifecycle.lifecycle_bindings'::regclass and contype='u'),'one current state per entity');
+select ok(exists(select 1 from pg_constraint where conrelid='lifecycle.state_history'::regclass and contype='u'),'state history concurrency constraint');
+select ok(exists(select 1 from pg_constraint where conrelid='core.credentials'::regclass and contype='c'),'credential checks');
+select ok(exists(select 1 from pg_constraint where conrelid='core.participations'::regclass and contype='f'),'participation foreign keys');
+select ok(exists(select 1 from pg_constraint where conrelid='core.role_capabilities'::regclass and contype='p'),'role capability primary key');
+select ok(exists(select 1 from pg_constraint where conrelid='lifecycle.transitions'::regclass and contype='c'),'transition source/target check');
+select ok(exists(select 1 from pg_trigger where tgname='events_immutable'),'events immutable');
+select ok(exists(select 1 from pg_trigger where tgname='evidence_immutable'),'evidence immutable');
+select * from finish();
+rollback;
