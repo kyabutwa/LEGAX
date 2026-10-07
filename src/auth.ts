@@ -12,7 +12,7 @@ function unb64(value:string){ const s=atob(value); return Uint8Array.from(s,c=>c
 
 async function passwordHash(password:string,salt=crypto.getRandomValues(new Uint8Array(16))):Promise<string>{
  const key=await crypto.subtle.importKey("raw",new TextEncoder().encode(password),"PBKDF2",false,["deriveBits"]);
- const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:210000,hash:"SHA-256"},key,256);
+ const bits=await crypto.subtle.deriveBits({name:"PBKDF2",salt,iterations:100000,hash:"SHA-256"},key,256);
  return `v1$${b64(salt)}$${b64(bits)}`;
 }
 async function passwordVerify(password:string,encoded:string){
@@ -85,7 +85,7 @@ async function startSession(env:AuthEnv,accountId:string){
  const expires=new Date(Date.now()+SESSION_DAYS*86400000);
  const sql=db(env);
  await sql`INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES(${accountId},'ACTIVE',${hash},${expires.toISOString()},now())`;
- return new Response(null,{status:303,headers:{location:"/account"}});
+ return new Response(null,{status:303,headers:{location:"/account", "set-cookie":cookie(token)}});
 }
 
 export async function currentAccount(env:AuthEnv,request:Request){
