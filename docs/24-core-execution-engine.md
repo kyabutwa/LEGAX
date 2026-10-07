@@ -2269,13 +2269,13 @@ The engine provides durable execution semantics behind asynchronous API operatio
 
 This architecture was checked against mature durable-execution and distributed-runtime patterns.
 
-Temporal documents durable workflow state, event history, worker task execution, replay, retries, deterministic workflow constraints and idempotency; these patterns validate the separation between durable orchestration and side-effecting activities. citeturn1search3turn1search2turn1search8turn1search11
+Temporal documents durable workflow state, event history, worker task execution, replay, retries, deterministic workflow constraints and idempotency; these patterns validate the separation between durable orchestration and side-effecting activities.
 
-Temporal's current operation documentation also explicitly models asynchronous operations, retries, at-least-once execution and the need for idempotent handlers. citeturn1search1
+Temporal's current operation documentation also explicitly models asynchronous operations, retries, at-least-once execution and the need for idempotent handlers.
 
-AWS Step Functions documents different workflow execution guarantees, including exactly-once Standard workflows and at-least-once Express workflows, reinforcing that execution guarantees must be scoped rather than generalized. citeturn0search4turn0search48
+AWS Step Functions documents different workflow execution guarantees, including exactly-once Standard workflows and at-least-once Express workflows, reinforcing that execution guarantees must be scoped rather than generalized.
 
-OpenTelemetry's current semantic conventions provide a useful observability model for traces, events, messaging and distributed execution correlation. citeturn0search0turn0search1turn0search12
+OpenTelemetry's current semantic conventions provide a useful observability model for traces, events, messaging and distributed execution correlation.
 
 These references inform runtime engineering patterns; LegaX's canonical authority, state, event, evidence, provider, security, privacy and API contracts remain authoritative.
 
