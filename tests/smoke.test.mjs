@@ -14,8 +14,8 @@ test("Phase 33 runtime contract is fail-closed", async () => {
   assert.match(contracts, /noParallelExecutionEngine:\s*true/);
   assert.match(contracts, /unknownExternalOutcomeIsNotSuccess:\s*true/);
   assert.match(runtime, /decision\.effect !== "ALLOW"/);
-  assert.match(worker, /"\/api\/health"/);
-  assert.match(worker, /"\/api\/runtime-contract"/);\n  assert.match(worker, /"\/api\/database\/health"/);\n  assert.match(worker, /readCanonicalDatabaseStatus/);
+  assert.match(worker, /"\/"/);\n  assert.match(worker, /renderAppShell/);\n  assert.match(worker, /"\/api\/health"/);
+  assert.match(worker, /"\/api\/runtime-contract"/);\n  assert.match(worker, /"\/api\/database\/health"/);\n  assert.match(worker, /readCanonicalDatabaseStatus/);\n\n  const shell = await read("../src/ui/app-shell.ts");\n  assert.match(shell, /Welcome Home/);\n  assert.match(shell, /Bienvenue chez vous/);\n  assert.match(shell, /aria-label="Open LegaX navigation"/);\n  assert.match(shell, /prefers-reduced-motion/);\n  assert.match(shell, /content-type.*text\/html/);
   assert.match(worker, /CAPABILITY_NOT_IMPLEMENTED/);
 });
 
