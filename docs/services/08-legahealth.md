@@ -32,7 +32,7 @@ Health data requires strict purpose limitation, data minimization, authorization
 
 ### Interoperability
 
-Where clinical information exchange is required, the implementation should map to appropriate healthcare interoperability standards such as HL7 FHIR rather than inventing incompatible clinical representations. FHIR provides a standardized framework for electronic healthcare information exchange. citeturn0search3turn0search4
+Where clinical information exchange is required, the implementation should map to appropriate healthcare interoperability standards such as HL7 FHIR rather than inventing incompatible clinical representations. FHIR provides a standardized framework for electronic healthcare information exchange.
 
 ### AI
 
