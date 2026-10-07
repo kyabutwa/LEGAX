@@ -29,6 +29,17 @@ jobs:
           echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
           echo "Resolved Cloudflare account identity from the authenticated Wrangler token."
 
+      - name: Inspect public DNS delegation
+        run: |
+          echo "=== legax.dev NS ==="
+          dig +short NS legax.dev || true
+          echo "=== legax.dev A ==="
+          dig +short A legax.dev || true
+          echo "=== legax.dev CNAME ==="
+          dig +short CNAME legax.dev || true
+          echo "=== legax.dev SOA ==="
+          dig +short SOA legax.dev || true
+
       - name: Deploy to Cloudflare
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         run: |
