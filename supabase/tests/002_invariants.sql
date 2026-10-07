@@ -12,10 +12,9 @@ select ok(exists(select 1 from pg_constraint where conrelid='core.role_capabilit
 select ok(exists(select 1 from pg_constraint where conrelid='lifecycle.transitions'::regclass and contype='c'),'transition source/target check');
 select ok(exists(select 1 from pg_trigger where tgname='events_immutable'),'events immutable');
 select ok(exists(select 1 from pg_trigger where tgname='evidence_immutable'),'evidence immutable');
-select * from finish();
-rollback;
-
 select ok(exists(select 1 from pg_constraint where conname='authorization_decisions_credential_fk'),'authorization credential foreign key');
 select ok(exists(select 1 from pg_constraint where conname='verifications_evidence_fk'),'verification evidence foreign key');
 select ok(exists(select 1 from pg_trigger where tgname='transitions_graph_consistency'),'transition graph consistency trigger');
 select ok(exists(select 1 from pg_trigger where tgname='lifecycle_bindings_graph_consistency'),'binding graph consistency trigger');
+select * from finish();
+rollback;
