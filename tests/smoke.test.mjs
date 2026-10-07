@@ -9,6 +9,8 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
  const runtime=await read("../src/core/runtime.ts");
  const worker=await read("../src/index.ts");
  const page=await read("../src/ui/page.ts");
+ const auth=await read("../src/auth.ts");
+ const account=await read("../src/account.ts");
  const shell=await read("../src/ui/app-shell.ts");
  const control=await read("../src/ui/control-plane.ts");
 
@@ -23,6 +25,14 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
  assert.match(worker,/\/api\/database\/health/);
  assert.match(worker,/readCanonicalDatabaseStatus/);
  assert.match(worker,/CAPABILITY_NOT_IMPLEMENTED/);
+ assert.match(worker,/handleAccount/);
+ assert.match(auth,/PBKDF2/);
+ assert.match(auth,/HttpOnly/);
+ assert.match(auth,/legax\.sessions/);
+ assert.match(auth,/EMAIL_PASSWORD/);
+ assert.match(account,/Create account/);
+ assert.match(account,/Sign in/);
+ assert.match(account,/Forgot password/);
 
  for(const path of ["\/identity","\/people","\/participation","\/communities","\/organizations","\/providers","\/places","\/units","\/resources","\/services","\/access","\/requests","\/activity","\/evidence","\/commerce","\/account","\/administration"]){
   assert.match(control,new RegExp(path.replace("\\/","\\/")));
@@ -39,7 +49,7 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
 });
 
 test("Phase 33 runtime has no legacy product names",async()=>{
- const files=["../src/core/contracts.ts","../src/core/runtime.ts","../src/http/problem.ts","../src/index.ts","../src/ui/page.ts","../src/ui/app-shell.ts","../src/ui/people.ts","../src/ui/control-plane.ts","../src/data/database.ts","../db/migrations/0005_canonical_legax_schema.sql","../wrangler.jsonc","../package.json"];
+ const files=["../src/core/contracts.ts","../src/core/runtime.ts","../src/http/problem.ts","../src/index.ts","../src/ui/page.ts","../src/ui/app-shell.ts","../src/ui/people.ts","../src/ui/control-plane.ts","../src/data/database.ts","../src/auth.ts","../src/account.ts","../db/migrations/0005_canonical_legax_schema.sql","../wrangler.jsonc","../package.json"];
  for(const file of files){const content=await read(file);assert.doesNotMatch(content,/LegaKeys|LegaPin/);}
 });
 
