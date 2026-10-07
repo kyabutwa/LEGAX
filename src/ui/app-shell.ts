@@ -1,2 +1,2 @@
-import { renderControlPlane } from "./control-plane";
-export function renderAppShell(): Response { return renderControlPlane("overview"); }
+import { renderLandingPage } from "./page";
+export function renderAppShell(): Response { return renderLandingPage(); }
