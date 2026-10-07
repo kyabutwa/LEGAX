@@ -78,6 +78,26 @@ jobs:
           }finally{await client.end();}
           NODE
 
+      - name: Database account CTE probe
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { Client } from "@neondatabase/serverless";
+          const client=new Client(process.env.DATABASE_URL);
+          const tag=`cte-probe-${Date.now()}`;
+          await client.connect();
+          try{
+            await client.query("BEGIN");
+            const result=await client.query("WITH e AS (INSERT INTO legax.entities(entity_type,canonical_name,display_name,lifecycle_state,effective_from) VALUES($1,$2,$2,$3,now()) RETURNING entity_id), p AS (INSERT INTO legax.persons(entity_id,display_name) SELECT entity_id,$2 FROM e RETURNING entity_id), i AS (INSERT INTO legax.identities(entity_id,identity_type,state,verification_state) SELECT entity_id,'PERSON','ACTIVE','UNVERIFIED' FROM e RETURNING identity_id), a AS (INSERT INTO legax.accounts(identity_id,state) SELECT identity_id,'ACTIVE' FROM i RETURNING account_id,identity_id), c AS (INSERT INTO legax.credentials(account_id,credential_type,state,subject_reference,verification_state,secret_reference) SELECT account_id,'EMAIL_PASSWORD','ACTIVE',$3,'UNVERIFIED','probe-secret' FROM a RETURNING account_id,credential_id), pa AS (UPDATE legax.accounts a SET primary_credential_id=c.credential_id,updated_at=now() FROM c WHERE a.account_id=c.account_id RETURNING a.account_id), s AS (INSERT INTO legax.account_settings(account_id) SELECT account_id FROM pa RETURNING account_id) SELECT account_id FROM s",["PERSON",tag,tag]);
+            console.log("Database account CTE probe passed:",result.rows[0]?.account_id);
+            await client.query("ROLLBACK");
+          }catch(error){
+            try{await client.query("ROLLBACK")}catch{}
+            console.error("DATABASE_ACCOUNT_CTE_PROBE_FAILED",error);
+            throw error;
+          }finally{await client.end();}
+          NODE
+
       - name: Functional account lifecycle verification
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         env:
