@@ -3512,7 +3512,7 @@ Research informs the architecture; it does not override LegaX's canonical defini
 
 ### Rule 5 — Evidence does not create authority
 
-**NO EVIDENCE → AUTOMATIC AUTHORITY.**
+**EVIDENCE → AUTHORIZATION INPUT, NOT AUTOMATIC AUTHORITY.**
 
 ### Rule 6 — Original history is preserved
 
@@ -3532,7 +3532,7 @@ Research informs the architecture; it does not override LegaX's canonical defini
 
 ### Rule 10 — Legal admissibility is not fabricated
 
-**LEGA X MAY PRESERVE THE RECORDS NEEDED TO SUPPORT EVIDENTIAL FITNESS AND HANDLING; APPLICABLE LAW DETERMINES LEGAL ADMISSIBILITY.**
+**LEGAX MAY PRESERVE THE RECORDS NEEDED TO SUPPORT EVIDENTIAL FITNESS AND HANDLING; APPLICABLE LAW DETERMINES LEGAL ADMISSIBILITY.**
 
 ### Final evidence rule
 
