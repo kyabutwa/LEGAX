@@ -61,3 +61,48 @@ export async function createAccount(env:AuthEnv,input:{email:string,password:str
  )
  INSERT INTO legax.account_settings(account_id) SELECT account_id FROM pa RETURNING account_id`;
  if(!rows.length) throw new Error("ACCOUNT_CREATE_FAILED");
+
+ return startSession(env,accountId);
+}
+
+export async function signIn(env:AuthEnv,input:{email:string,password:string}){
+ const email=input.email.trim().toLowerCase();
+ const sql=db(env);
+ const rows=await sql`SELECT a.account_id,c.secret_reference FROM legax.accounts a JOIN legax.credentials c ON c.account_id=a.account_id WHERE a.state='ACTIVE' AND c.state='ACTIVE' AND c.credential_type='EMAIL_PASSWORD' AND lower(c.subject_reference)=${email} LIMIT 1`;
+ if(!rows.length || !(await passwordVerify(input.password,String(rows[0].secret_reference)))) throw new Error("INVALID_CREDENTIALS");
+ await sql`UPDATE legax.accounts SET last_authenticated_at=now(),updated_at=now() WHERE account_id=${rows[0].account_id}`;
+ return startSession(env,rows[0].account_id as string);
+}
+
+async function startSession(env:AuthEnv,accountId:string){
+ const token=b64(crypto.getRandomValues(new Uint8Array(32)));
+ const hash=await tokenHash(token);
+ const expires=new Date(Date.now()+SESSION_DAYS*86400000);
+ const sql=db(env);
+ await sql`INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES(${accountId},'ACTIVE',${hash},${expires.toISOString()},now())`;
+ return new Response(null,{status:303,headers:{location:"/account","set-cookie":cookie(token)}});
+}
+
+export async function currentAccount(env:AuthEnv,request:Request){
+ const header=request.headers.get("cookie")||"";
+ const token=header.split(";").map(x=>x.trim()).find(x=>x.startsWith(COOKIE+"="))?.slice(COOKIE.length+1);
+ if(!token) return null;
+ const hash=await tokenHash(token), sql=db(env);
+ const rows=await sql`SELECT a.account_id,e.display_name,i.verification_state,a.state,s.expires_at FROM legax.sessions s JOIN legax.accounts a ON a.account_id=s.account_id JOIN legax.identities i ON i.identity_id=a.identity_id JOIN legax.entities e ON e.entity_id=i.entity_id WHERE s.session_secret_reference=${hash} AND s.state='ACTIVE' AND a.state='ACTIVE' AND s.expires_at>now() LIMIT 1`;
+ if(!rows.length) return null;
+ await sql`UPDATE legax.sessions SET last_seen_at=now() WHERE session_secret_reference=${hash}`;
+ return rows[0];
+}
+
+export async function signOut(env:AuthEnv,request:Request){
+ const header=request.headers.get("cookie")||"", token=header.split(";").map(x=>x.trim()).find(x=>x.startsWith(COOKIE+"="))?.slice(COOKIE.length+1);
+ if(token){const hash=await tokenHash(token); await db(env)`UPDATE legax.sessions SET state='REVOKED',revoked_at=now() WHERE session_secret_reference=${hash} AND state='ACTIVE'`;}
+ return new Response(null,{status:303,headers:{location:"/account","set-cookie":cookie("",0)}});
+}
+
+export function authError(error:unknown){
+ const code=error instanceof Error?error.message:"AUTH_ERROR";
+ console.error("LegaX account operation failed", error);
+ const messages:Record<string,string>={INVALID_EMAIL:"Enter a valid email address.",PASSWORD_TOO_WEAK:"Use a password of at least 10 characters.",INVALID_DISPLAY_NAME:"Enter your name.",ACCOUNT_ALREADY_EXISTS:"This email is already associated with a LegaX account. If it is yours, use Forgot password.",PASSWORD_CONFIRMATION_MISMATCH:"The two passwords do not match.",INVALID_CREDENTIALS:"Email or password is incorrect.",ACCOUNT_CREATE_FAILED:"The account could not be created.",INVALID_RECOVERY_TOKEN:"This recovery link is invalid or has expired.",RECOVERY_DELIVERY_FAILED:"The recovery email could not be sent. Please try again later."};
+ return messages[code]||"The account operation could not be completed.";
+}
