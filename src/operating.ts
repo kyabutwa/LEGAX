@@ -46,7 +46,7 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
 }
 
 async function createContext(env:AuthEnv,account:any,path:string,name:string):Promise<Response>{
- if(name.length<2||name.length>160) return page("Create context","Account",shell("Name required","Governed context","Enter a clear name for the context(),","<section class=notice>Use at least 2 characters.</section><a class=button href=\""+esc(path)+"\">Back</a>"));
+ if(name.length<2||name.length>160) return page("Create context","Account",shell("Name required","Governed context","Enter a clear name for the context.","<section class=notice>Use at least 2 characters.</section><a class=button href=\""+esc(path)+"\">Back</a>"));
  const kind:Kind=path==="/providers"?"provider":path==="/organizations"?"organization":"community";
  const sql=db(env);
  const identity=await sql`SELECT i.identity_id,i.entity_id FROM legax.accounts a JOIN legax.identities i ON i.identity_id=a.identity_id WHERE a.account_id=${account.account_id} LIMIT 1`;
