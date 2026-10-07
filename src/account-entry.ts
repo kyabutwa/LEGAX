@@ -2,7 +2,7 @@ import { currentAccount, createAccount, signIn, signOut, authError, type AuthEnv
 import { renderLegaXPage } from "./ui/page";
 
 const intents=["participant","join-community","community","provider","organization"];
-function esc(v:string){return v.replace(/[&<>"\']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\'":"&#39;"}[c]||c));}
+function esc(v:string){const m:Record<string,string>={"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","\'":"&#39;"};return v.replace(/[&<>"']/g,c=>m[c]||c);}
 function intentOf(v:string|null){return intents.includes(v||"")?v||"":"";}
 function selectedLabel(v:string){const m:Record<string,string>={participant:"Join as a Participant","join-community:"Join a Community",community:"Join as a Community",provider:"Join as a Provider",organization:"Join as an Organization"};return m[v]||"Enter LegaX";}
 function redirectWithSession(response:Response,next:string){if(response.status!==303)return response;const headers=new Headers(response.headers);headers.set("location",next);return new Response(null,{status:303,headers});}
