@@ -79,3 +79,27 @@ BEGIN
   RETURN NEW;
 END;
 $$;
+
+
+-- Final legacy-runtime scrub for functions whose source was persisted before
+-- the physical schema rename. Replace both qualified schema references and
+-- legacy invariant identifiers while preserving each function's signature.
+DO $$
+DECLARE
+  r record;
+  definition text;
+BEGIN
+  FOR r IN
+    SELECT p.oid
+      FROM pg_proc p
+      JOIN pg_namespace n ON n.oid = p.pronamespace
+     WHERE n.nspname = 'legax'
+       AND (p.prosrc ILIKE '%legakeys.%' OR p.prosrc ILIKE '%LEGAKEYS_%')
+  LOOP
+    definition := pg_get_functiondef(r.oid);
+    definition := replace(definition, 'legakeys.', 'legax.');
+    definition := replace(definition, 'LEGAKEYS_', 'LEGAX_');
+    EXECUTE definition;
+  END LOOP;
+END
+$$;
