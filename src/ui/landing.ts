@@ -20,7 +20,7 @@ export function renderLandingPage(): Response {
   <div class="landing-copy">
     <p class="landing-kicker">THE FEATURE WE ARE SHIPPING NOW</p>
     <h2>A real LegaX account.</h2>
-    <p>Create an account, establish a protected session, and enter the platform. No fake dashboard. No fabricated records. No permission hidden inside a button.</p>
+    <p>Create an account, establish a protected session, and enter the platform. No fake home screen. No fabricated records. No permission hidden inside a button.</p>
     <a class="landing-primary" href="/account">Open account</a>
   </div>
   <div class="landing-preview" aria-label="LegaX account interface preview">
