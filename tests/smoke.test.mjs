@@ -37,9 +37,9 @@ test("Phase 33 canonical runtime and account entry are wired",async()=>{
  assert.match(join,/Join as an Organization/);
  assert.match(onboarding,/legax\.participations/);
  assert.match(onboarding,/legax\.participants/);
- assert.match(landing,/Choose your LegaX path/);
+ assert.match(landing,/Create your LegaX account/);
  assert.match(landing,/real LegaX account/);
- assert.doesNotMatch(landing,/dashboard|social proof|testimonials/i);
+ assert.doesNotMatch(landing,/dashboard|social proof|testimonials|Choose your LegaX path/i);
 });
 
 test("Phase 33 runtime has no legacy product names",async()=>{
