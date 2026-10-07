@@ -1,12 +1,13 @@
 import { currentAccount, createAccount, signIn, signOut, authError, type AuthEnv } from "./auth";
 import { renderLegaXPage } from "./ui/page";
 import { renderAuthenticatedHome } from "./ui/authenticated-home";
+import { loadHomeSnapshot } from "./operating";
 
 const intents=["participant","join-community","community","provider","organization"];
 function esc(v:string){return v.replace(/[&<>"']/g,function(c){return c==="&"?"&amp;":c==="<"?"&lt;":c===">"?"&gt;":c==='"'?"&quot;":"&#39;";});}
 function intentOf(v:string|null){return intents.includes(v||"")?v||"":"";}
 function selectedLabel(v:string){if(v==="participant")return "Join as a Participant";if(v==="join-community")return "Join a Community";if(v==="community")return "Join as a Community";if(v==="provider")return "Join as a Provider";if(v==="organization")return "Join as an Organization";return "Enter LegaX";}
-async function redirectWithSession(response:Response,request:Request,env:AuthEnv,next:string){if(response.status!==303)return response;if(next==="/"){const setCookie=response.headers.get("set-cookie");const token=setCookie?.split(";")[0];if(token){const homeRequest=new Request(request.url,{headers:{cookie:token}});const account=await currentAccount(env,homeRequest);if(account){const home=renderAuthenticatedHome(account);const headers=new Headers(home.headers);headers.set("set-cookie",setCookie);headers.set("cache-control","no-store");return new Response(home.body,{status:200,headers});}}}const headers=new Headers(response.headers);headers.set("location",next);headers.set("cache-control","no-store");return new Response(null,{status:303,headers});}
+async function redirectWithSession(response:Response,request:Request,env:AuthEnv,next:string){if(response.status!==303)return response;if(next==="/"){const setCookie=response.headers.get("set-cookie");const token=setCookie?.split(";")[0];if(token){const homeRequest=new Request(request.url,{headers:{cookie:token}});const account=await currentAccount(env,homeRequest);if(account){const home=renderAuthenticatedHome(account,await loadHomeSnapshot(env,account));const headers=new Headers(home.headers);headers.set("set-cookie",setCookie);headers.set("cache-control","no-store");return new Response(home.body,{status:200,headers});}}}const headers=new Headers(response.headers);headers.set("location",next);headers.set("cache-control","no-store");return new Response(null,{status:303,headers});}
 export async function handleAccountEntry(request:Request,env:AuthEnv):Promise<Response>{
  const url=new URL(request.url),intent=intentOf(url.searchParams.get("intent"));
  try{
