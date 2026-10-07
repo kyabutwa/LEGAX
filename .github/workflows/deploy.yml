@@ -41,7 +41,7 @@ jobs:
           curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/api/database/health
           curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/
           curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/ | grep -q "Who you are."
-          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/ | grep -q "Create your LegaX account"
+          curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/ | grep -q "Create account"
           curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/people
           curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/account | grep -q "Create account"
           curl --fail-with-body --silent --show-error --retry 5 --retry-delay 2 https://legax.kyabutwabis-f.workers.dev/account | grep -q "Sign in"
