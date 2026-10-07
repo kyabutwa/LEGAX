@@ -34,7 +34,7 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
 
 async function createContext(env:AuthEnv,account:any,path:string,name:string):Promise<Response>{
  if(name.length<2||name.length>160) return page("Create context","Account",shell("Name required","Governed context","Enter a clear name for the context.","<section class=notice>Use at least 2 characters.</section><a class=button href="+JSON.stringify(path)+">Back</a>"));
- const kind:path extends "/providers"?Kind:"provider" = path==="/providers"?"provider":path==="/organizations"?"organization":"community";
+ const kind:Kind=path==="/providers"?"provider":path==="/organizations"?"organization":"community";
  const sql=db(env);
  const identity=await sql`SELECT i.identity_id,i.entity_id FROM legax.accounts a JOIN legax.identities i ON i.identity_id=a.identity_id WHERE a.account_id=${account.account_id} LIMIT 1`;
  if(!identity.length)throw new Error("IDENTITY_NOT_FOUND");
@@ -71,8 +71,10 @@ async function requestCommunity(env:AuthEnv,account:any,communityId:string):Prom
 }
 
 async function contexts(env:AuthEnv,kind:"provider"|"organization"):Promise<Response>{
- const sql=db(env), table=kind==="provider"?"provider_profiles":"organization_profiles", type=kind==="provider"?"PROVIDER":"ORGANIZATION";
- const rows=await sql.unsafe(`SELECT e.entity_id,e.display_name,p.onboarding_state,p.created_at FROM legax.${table} p JOIN legax.entities e ON e.entity_id=p.${kind}_entity_id ORDER BY p.created_at DESC LIMIT 50`);
+ const sql=db(env), type=kind==="provider"?"PROVIDER":"ORGANIZATION";
+ const rows=kind==="provider"
+  ? await sql`SELECT e.entity_id,e.display_name,p.onboarding_state,p.created_at FROM legax.provider_profiles p JOIN legax.entities e ON e.entity_id=p.provider_entity_id ORDER BY p.created_at DESC LIMIT 50`
+  : await sql`SELECT e.entity_id,e.display_name,p.onboarding_state,p.created_at FROM legax.organization_profiles p JOIN legax.entities e ON e.entity_id=p.organization_entity_id ORDER BY p.created_at DESC LIMIT 50`;
  const cards=rows.map((r:any)=>`<article class="ops-card"><strong>${esc(String(r.display_name||type))}</strong><span>Operating context ready for configuration.</span><b>${esc(String(r.onboarding_state))}</b></article>`).join("");
  const label=kind==="provider"?"Providers":"Organizations";
  return page(label,"Overview",shell(label,kind==="provider"?"20C · Provider network":"20B · Organization network",kind==="provider"?"Providers expose services, teams, capacity, delivery and customer operations.":"Organizations operate governance, teams, work, resources and services.",`<div class="ops-grid">${cards||"<section class=notice>No "+label.toLowerCase()+" has joined yet. The creation workflow is ready.</section>"}</div><form class="ops-form" method="post"><input type="hidden" name="action" value="create-context"><label>Name<input name="name" required maxlength="160" placeholder="Your ${kind} name"></label><button type="submit">Create ${kind} operating context</button></form>`));
