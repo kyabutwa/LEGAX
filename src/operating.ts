@@ -41,7 +41,7 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
   return page("Not found","Overview",shell("Not found","LegaX","The requested operating surface does not exist.","<section class=notice>Choose a real LegaX operating surface from home.</section>"));
  }catch(error){
   console.error("LegaX operating surface failed",error);
-  return page("Operation unavailable","Overview",shell("Operation unavailable","LegaX","The requested operation could not be completed safely.","<section class=notice role=alert>The operation was not completed. No consequential state was claimed.</section><a class=button href="/">Return home</a>"));
+  return page("Operation unavailable","Overview",shell("Operation unavailable","LegaX","The requested operation could not be completed safely.","<section class=notice role=alert>The operation was not completed. No consequential state was claimed.</section><a class=button href=\"/\">Return home</a>"));
  }
 }
 
