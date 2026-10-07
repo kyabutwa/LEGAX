@@ -13,7 +13,7 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
  const account=await read("../src/account.ts");
  const shell=await read("../src/ui/app-shell.ts");
  const landing=await read("../src/ui/landing.ts");
- const control=await read("../src/ui/control-plane.ts");
+ const control=await read("../src/ui/control-plane.ts");\n const join=await read("../src/join.ts");\n const onboarding=await read("../src/onboarding-entry.ts");\n const accountEntry=await read("../src/account-entry.ts");
 
  assert.match(contracts,/noAuthorizationNoConsequentialAction:\s*true/);
  assert.match(contracts,/noParallelAuthorityChain:\s*true/);
@@ -26,14 +26,14 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
  assert.match(worker,/\/api\/database\/health/);
  assert.match(worker,/readCanonicalDatabaseStatus/);
  assert.match(worker,/CAPABILITY_NOT_IMPLEMENTED/);
- assert.match(worker,/handleAccount/);
+ assert.match(worker,/handleAccountEntry/);\n assert.match(worker,/renderJoin/);\n assert.match(worker,/handleOnboarding/);
  assert.match(auth,/PBKDF2/);
  assert.match(auth,/HttpOnly/);
  assert.match(auth,/legax\.sessions/);
  assert.match(auth,/EMAIL_PASSWORD/);
  assert.match(account,/Create account/);
  assert.match(account,/Sign in/);
- assert.match(account,/canonical recovery flow/);
+ assert.match(account,/canonical recovery flow/);\n assert.match(join,/Join as a Participant/);\n assert.match(join,/Join a Community/);\n assert.match(join,/Join as a Provider/);\n assert.match(join,/Join as an Organization/);\n assert.match(onboarding,/legax\.participations/);\n assert.match(onboarding,/legax\.participants/);\n assert.match(accountEntry,/onboarding/);
 
  for(const path of ["\/identity","\/people","\/participation","\/communities","\/organizations","\/providers","\/places","\/units","\/resources","\/services","\/access","\/requests","\/activity","\/evidence","\/commerce","\/account","\/administration"]){
   assert.match(control,new RegExp(path.replace("\\/","\\/")));
@@ -42,9 +42,9 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
  assert.match(page,/Primary navigation/);
  assert.match(page,/prefers-reduced-motion/);
  assert.match(page,/mark-logo/);
- assert.match(page,/raw\.githubusercontent\.com\/kyabutwa\/LEGAX\/main\/IMG_1700\.jpeg/);
+ assert.match(page,/raw\.githubusercontent\.com\/kyabutwa\/LEGAX\/main\/legax-logo-transparent\.png/);
  assert.match(shell,/renderLandingPage/);
- assert.match(landing,/Create your LegaX account/);
+ assert.match(landing,/Choose your LegaX path/);
  assert.match(landing,/The feature we are shipping now/);
  assert.match(landing,/real account/);
  assert.doesNotMatch(landing,/dashboard|social proof|testimonials/i);
