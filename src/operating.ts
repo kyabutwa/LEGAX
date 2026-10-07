@@ -30,6 +30,8 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
    const form=await request.formData(), action=String(form.get("action")||"");
    if(action==="create-context")return await createContext(env,account,path,String(form.get("name")||"").trim());
    if(action==="request-community")return await requestCommunity(env,account,String(form.get("community_entity_id")||""));
+   if(action==="create-team")return await createTeam(env,account,String(form.get("context_entity_id")||""),String(form.get("name")||"").trim());
+   if(action==="publish-product")return await publishProduct(env,account,String(form.get("context_entity_id")||""),form);
   }
   if(path==="/communities")return await communities(env);
   if(path==="/providers")return await contexts(env,"provider");
@@ -38,6 +40,7 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
   if(path==="/market")return await market(env);
   if(path==="/orders")return await orders(env,account);
   if(path==="/account/settings")return await settings(env,account);
+  if(path.startsWith("/providers/")||path.startsWith("/organizations/"))return await contextDetail(env,account,path);
   return page("Not found","Overview",shell("Not found","LegaX","The requested operating surface does not exist.","<section class=notice>Choose a real LegaX operating surface from home.</section>"));
  }catch(error){
   console.error("LegaX operating surface failed",error);
