@@ -38,10 +38,16 @@ export async function createAccount(env:AuthEnv,input:{email:string,password:str
  const existing=await sql`SELECT 1 FROM legax.credentials WHERE credential_type='EMAIL_PASSWORD' AND lower(subject_reference)=${email} LIMIT 1`;
  if(existing.length) throw new Error("ACCOUNT_ALREADY_EXISTS");
  const secret=await passwordHash(input.password);
+
+ // One atomic statement. The primary credential is bound before the statement commits,
+ // so the deferred accounts_primary_credential_fk is satisfied by construction.
  const rows=await sql`WITH e AS (
    INSERT INTO legax.entities(entity_type,canonical_name,display_name,lifecycle_state,effective_from)
    VALUES ('PERSON',${name},${name},'ACTIVE',now()) RETURNING entity_id
- ), p AS (\n   INSERT INTO legax.persons(entity_id,display_name) SELECT entity_id,${name} FROM e RETURNING entity_id\n ), i AS (
+ ), p AS (
+   INSERT INTO legax.persons(entity_id,display_name)
+   SELECT entity_id,${name} FROM e RETURNING entity_id
+ ), i AS (
    INSERT INTO legax.identities(entity_id,identity_type,state,verification_state)
    SELECT entity_id,'PERSON','ACTIVE','UNVERIFIED' FROM e RETURNING identity_id
  ), a AS (
@@ -49,10 +55,18 @@ export async function createAccount(env:AuthEnv,input:{email:string,password:str
    SELECT identity_id,'ACTIVE' FROM i RETURNING account_id,identity_id
  ), c AS (
    INSERT INTO legax.credentials(account_id,credential_type,state,subject_reference,verification_state,secret_reference)
-   SELECT account_id,'EMAIL_PASSWORD','ACTIVE',${email},'UNVERIFIED',${secret} FROM a RETURNING account_id
+   SELECT account_id,'EMAIL_PASSWORD','ACTIVE',${email},'UNVERIFIED',${secret} FROM a
+   RETURNING account_id,credential_id
+ ), pa AS (
+   UPDATE legax.accounts a
+   SET primary_credential_id=c.credential_id,updated_at=now()
+   FROM c
+   WHERE a.account_id=c.account_id
+   RETURNING a.account_id
+ ), s AS (
+   INSERT INTO legax.account_settings(account_id) SELECT account_id FROM pa RETURNING account_id
  )
- INSERT INTO legax.account_settings(account_id) SELECT account_id FROM c
- RETURNING account_id`;
+ SELECT account_id FROM s`;
  if(!rows.length) throw new Error("ACCOUNT_CREATE_FAILED");
  return startSession(env,rows[0].account_id as string);
 }
@@ -61,7 +75,7 @@ export async function signIn(env:AuthEnv,input:{email:string,password:string}){
  const email=input.email.trim().toLowerCase();
  const sql=db(env);
  const rows=await sql`SELECT a.account_id,c.secret_reference FROM legax.accounts a JOIN legax.credentials c ON c.account_id=a.account_id WHERE a.state='ACTIVE' AND c.state='ACTIVE' AND c.credential_type='EMAIL_PASSWORD' AND lower(c.subject_reference)=${email} LIMIT 1`;
- if(!rows.length || !(await passwordVerify(input.password,rows[0].secret_reference as string))) throw new Error("INVALID_CREDENTIALS");
+ if(!rows.length || !(await passwordVerify(input.password,String(rows[0].secret_reference)))) throw new Error("INVALID_CREDENTIALS");
  await sql`UPDATE legax.accounts SET last_authenticated_at=now(),updated_at=now() WHERE account_id=${rows[0].account_id}`;
  return startSession(env,rows[0].account_id as string);
 }
@@ -72,7 +86,7 @@ async function startSession(env:AuthEnv,accountId:string){
  const expires=new Date(Date.now()+SESSION_DAYS*86400000);
  const sql=db(env);
  await sql`INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES(${accountId},'ACTIVE',${hash},${expires.toISOString()},now())`;
- return new Response(null,{status:303,headers:{location:"/account", "set-cookie":cookie(token)}});
+ return new Response(null,{status:303,headers:{location:"/account","set-cookie":cookie(token)}});
 }
 
 export async function currentAccount(env:AuthEnv,request:Request){
@@ -94,6 +108,7 @@ export async function signOut(env:AuthEnv,request:Request){
 
 export function authError(error:unknown){
  const code=error instanceof Error?error.message:"AUTH_ERROR";
+ console.error("LegaX account operation failed", error);
  const messages:Record<string,string>={INVALID_EMAIL:"Enter a valid email address.",PASSWORD_TOO_WEAK:"Use a password of at least 10 characters.",INVALID_DISPLAY_NAME:"Enter your name.",ACCOUNT_ALREADY_EXISTS:"An account already exists for this email.",INVALID_CREDENTIALS:"Email or password is incorrect.",ACCOUNT_CREATE_FAILED:"The account could not be created."};
  return messages[code]||"The account operation could not be completed.";
 }
