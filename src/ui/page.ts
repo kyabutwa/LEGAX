@@ -32,14 +32,14 @@ main{width:min(1180px,calc(100% - 36px));margin:auto;padding:clamp(42px,7vw,88px
 `;
 
 export function renderLegaXPage(options:PageOptions):Response{
-  const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#061126"><meta name="description" content="LegaX — intelligent living infrastructure for participating people and communities."><title>${escapeHtml(options.title)} · LegaX</title><style>${baseStyles}</style></head><body><header class="topbar"><div class="topbar-inner"><details class="menu"><summary aria-label="Open LegaX navigation"><span class="hamburger" aria-hidden="true"></span></summary><nav class="menu-panel" aria-label="Primary navigation">${navMarkup(options.active)}</nav></details><a class="mark" href="/" aria-label="LegaX home"><img class="mark-logo" src="https://raw.githubusercontent.com/kyabutwa/LEGAX/main/IMG_1700.jpeg" alt="LegaX"><span>LegaX</span></a><div class="account"><a class="account-link" href="/account">Account</a></div></div></header><main>${options.content}</main><footer>LegaX · Who you are. Where you belong. One ecosystem.</footer></body></html>`;
+  const html=`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#061126"><meta name="description" content="LegaX — intelligent living infrastructure for participating people and communities."><title>${escapeHtml(options.title)} · LegaX</title><style>${baseStyles}</style></head><body><header class="topbar"><div class="topbar-inner"><details class="menu"><summary aria-label="Open LegaX navigation"><span class="hamburger" aria-hidden="true"></span></summary><nav class="menu-panel" aria-label="Primary navigation">${navMarkup(options.active)}</nav></details><a class="mark" href="/" aria-label="LegaX home"><img class="mark-logo" src="https://raw.githubusercontent.com/kyabutwa/LEGAX/main/legax-logo-transparent.png" alt="LegaX"><span>LegaX</span></a><div class="account"><a class="account-link" href="/account">Account</a></div></div></header><main>${options.content}</main><footer>LegaX · Who you are. Where you belong. One ecosystem.</footer></body></html>`;
   return new Response(html,{status:200,headers:{"content-type":"text/html; charset=utf-8","cache-control":"no-store","x-content-type-options":"nosniff","referrer-policy":"strict-origin-when-cross-origin"}});
 }
 
 export function renderLandingPage():Response{
   return renderLegaXPage({title:"Welcome Home",active:"Overview",content:`
 <section class="hero" aria-labelledby="welcome">
-  <img class="hero-logo" src="https://raw.githubusercontent.com/kyabutwa/LEGAX/main/IMG_1700.jpeg" alt="LegaX">
+  <img class="hero-logo" src="https://raw.githubusercontent.com/kyabutwa/LEGAX/main/legax-logo-transparent.png" alt="LegaX">
   <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Intelligent living infrastructure</p>
   <h1 id="welcome">Who you are.<br>Where you belong.</h1>
   <p class="lede">LegaX is building a trusted foundation for people to enter, identify themselves and participate in the places and communities they choose.</p>
