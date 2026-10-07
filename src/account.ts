@@ -15,10 +15,7 @@ export async function handleAccount(request:Request,env:AuthEnv):Promise<Respons
   const account=await currentAccount(env,request);
   return renderAccount(account,null);
  }catch(error){
-   let account=null;
-   try{ account=await currentAccount(env,request); }
-   catch(sessionError){ console.error("LegaX account error-state lookup failed",sessionError); }
-   return renderAccount(account,authError(error));
+   return renderAccount(null,authError(error));
  }
 }
 
