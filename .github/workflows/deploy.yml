@@ -52,6 +52,75 @@ jobs:
             echo "::warning::legax.dev does not currently resolve from the GitHub Actions runner; Workers deployment and workers.dev UI routes are verified, but custom-domain DNS remains an external configuration gate."
           fi
 
+      - name: Functional account lifecycle verification
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
+        env:
+          WORKER_URL: https://legax.kyabutwabis-f.workers.dev
+        run: |
+          node --input-type=module <<'NODE'
+          import { neon } from "@neondatabase/serverless";
+          const base=process.env.WORKER_URL;
+          const email=`legax-verification-${Date.now()}-${Math.random().toString(36).slice(2)}@example.invalid`;
+          const password="LegaXVerification123!";
+          const name="LegaX Deployment Verification";
+          const getCookie=(response)=>{
+            const values=response.headers.getSetCookie?.() || [];
+            return values.map(v=>v.split(";",1)[0]).join("; ");
+          };
+          const assert=(condition,message)=>{if(!condition) throw new Error(message)};
+          let cookie="";
+          try{
+            const page=await fetch(base+"/account");
+            assert(page.ok,"/account GET failed");
+            assert((await page.text()).includes("Create account"),"/account GET missing create form");
+
+            const created=await fetch(base+"/account",{method:"POST",redirect:"manual",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:"create",display_name:name,email,password})});
+            assert(created.status===303,"account creation did not return 303; got "+created.status);
+            assert(created.headers.get("location")==="/account","account creation location mismatch");
+            cookie=getCookie(created);
+            assert(cookie.includes("legax_session="),"account creation did not set a session cookie");
+
+            const signedIn=await fetch(base+"/account",{headers:{cookie}});
+            const signedInHtml=await signedIn.text();
+            assert(signedIn.ok && signedInHtml.includes("Signed in") && signedInHtml.includes(name),"created session was not authenticated");
+
+            const signedOut=await fetch(base+"/account",{method:"POST",redirect:"manual",headers:{"content-type":"application/x-www-form-urlencoded","cookie":cookie},body:new URLSearchParams({action:"signout"})});
+            assert(signedOut.status===303,"signout did not return 303");
+
+            const login=await fetch(base+"/account",{method:"POST",redirect:"manual",headers:{"content-type":"application/x-www-form-urlencoded"},body:new URLSearchParams({action:"signin",email,password})});
+            assert(login.status===303,"signin did not return 303; got "+login.status);
+            cookie=getCookie(login);
+            assert(cookie.includes("legax_session="),"signin did not set a session cookie");
+
+            const reauthenticated=await fetch(base+"/account",{headers:{cookie}});
+            const reauthHtml=await reauthenticated.text();
+            assert(reauthenticated.ok && reauthHtml.includes("Signed in") && reauthHtml.includes(name),"signin session was not authenticated");
+
+            console.log("Functional account lifecycle verification passed:",email);
+          } finally {
+            const sql=neon(process.env.DATABASE_URL);
+            const rows=await sql`SELECT a.account_id,i.identity_id,e.entity_id
+              FROM legax.accounts a
+              JOIN legax.identities i ON i.identity_id=a.identity_id
+              JOIN legax.entities e ON e.entity_id=i.entity_id
+              JOIN legax.credentials c ON c.account_id=a.account_id
+              WHERE c.credential_type='EMAIL_PASSWORD' AND c.subject_reference=${email}
+              LIMIT 1`;
+            if(rows.length){
+              const accountId=rows[0].account_id, identityId=rows[0].identity_id, entityId=rows[0].entity_id;
+              await sql`UPDATE legax.accounts SET primary_credential_id=NULL WHERE account_id=${accountId}`;
+              await sql`DELETE FROM legax.sessions WHERE account_id=${accountId}`;
+              await sql`DELETE FROM legax.account_settings WHERE account_id=${accountId}`;
+              await sql`DELETE FROM legax.credentials WHERE account_id=${accountId}`;
+              await sql`DELETE FROM legax.accounts WHERE account_id=${accountId}`;
+              await sql`DELETE FROM legax.persons WHERE entity_id=${entityId}`;
+              await sql`DELETE FROM legax.identities WHERE identity_id=${identityId}`;
+              await sql`DELETE FROM legax.entities WHERE entity_id=${entityId}`;
+              console.log("Functional account verification data cleaned up.");
+            }
+          }
+          NODE
+
       - name: Report deployment configuration
         if: ${{ env.CLOUDFLARE_API_TOKEN == '' || env.CLOUDFLARE_ACCOUNT_ID == '' || env.DATABASE_URL == '' }}
         run: echo "Cloudflare deployment skipped because required deployment secrets are not configured."
