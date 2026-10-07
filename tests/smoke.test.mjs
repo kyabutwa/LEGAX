@@ -15,7 +15,7 @@ test("Phase 33 runtime contract is fail-closed", async () => {
   assert.match(contracts, /unknownExternalOutcomeIsNotSuccess:\s*true/);
   assert.match(runtime, /decision\.effect !== "ALLOW"/);
   assert.match(worker, /"\/api\/health"/);
-  assert.match(worker, /"\/api\/runtime-contract"/);
+  assert.match(worker, /"\/api\/runtime-contract"/);\n  assert.match(worker, /"\/api\/database\/health"/);\n  assert.match(worker, /readCanonicalDatabaseStatus/);
   assert.match(worker, /CAPABILITY_NOT_IMPLEMENTED/);
 });
 
@@ -24,7 +24,7 @@ test("Phase 33 has no legacy product names in runtime files", async () => {
     "../src/core/contracts.ts",
     "../src/core/runtime.ts",
     "../src/http/problem.ts",
-    "../src/index.ts",
+    "../src/index.ts",\n    "../src/data/database.ts",\n    "../db/migrations/0005_canonical_legax_schema.sql",
     "../wrangler.jsonc",
     "../package.json"
   ];
