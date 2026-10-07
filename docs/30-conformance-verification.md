@@ -763,7 +763,7 @@ Verify:
 
 Critical distinction:
 
-**POSTGRESQL/RLS CONFORMANCE ≠ LEGAX AUTHORIZATION CONFORMANCE**
+**POSTGRESQL/RLS CONFORMANCE ≠ LegaX AUTHORIZATION CONFORMANCE**
 
 Both may be required.
 
@@ -1216,7 +1216,7 @@ unless a defined external standard, scope, assessor and evidence actually suppor
 
 External standards may be mapped through:
 
-**EXTERNAL REQUIREMENT → LEGAX ADOPTION DECISION → LEGAX REQUIREMENT → CONTROL → TEST → EVIDENCE**
+**EXTERNAL REQUIREMENT → LegaX ADOPTION DECISION → LegaX REQUIREMENT → CONTROL → TEST → EVIDENCE**
 
 This prevents “standards name-dropping.”
 
@@ -1685,7 +1685,7 @@ A stale or unauthorized retrieved document must not define the assessment.
 
 Provider conformance claims must distinguish:
 
-**PROVIDER CLAIM → LEGAX VALIDATION → EVIDENCE → ASSESSMENT → STATUS**
+**PROVIDER CLAIM → LegaX VALIDATION → EVIDENCE → ASSESSMENT → STATUS**
 
 Provider certification, attestation or compliance document may be evidence, but LegaX must preserve its source, scope, validity period and applicability.
 
