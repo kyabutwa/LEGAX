@@ -83,7 +83,7 @@ jobs:
             const c=(await client.query("INSERT INTO legax.credentials(account_id,credential_type,state,subject_reference,verification_state,secret_reference) VALUES($1,$2,$3,$4,$5,$6) RETURNING credential_id",[a.account_id,"EMAIL_PASSWORD","ACTIVE",tag,"UNVERIFIED","probe-secret"])).rows[0];
             await client.query("UPDATE legax.accounts SET primary_credential_id=$1,updated_at=now() WHERE account_id=$2",[c.credential_id,a.account_id]);
             await client.query("INSERT INTO legax.account_settings(account_id) VALUES($1)",[a.account_id]);
-            await client.query("INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES($1,$2,$3,now()+interval '1 day',now())",[a.account_id,"ACTIVE",tag+"-session"]);
+            await client.query("INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES($1,$2,$3,now()+interval '1 day',now())",[a.account_id,"ACTIVE","a".repeat(64)]);
             await client.query("ROLLBACK");
             console.log("Database account transaction probe passed.");
           }catch(error){
