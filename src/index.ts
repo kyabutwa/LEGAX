@@ -1,9 +1,11 @@
+import { readCanonicalDatabaseStatus } from "./data/database";
 import { CORE_RULES } from "./core/contracts";
 import { createRequestContext } from "./core/runtime";
 import { problem } from "./http/problem";
 
 export interface Env {
   ENVIRONMENT: string;
+  DATABASE_URL?: string;
 }
 
 function json(data: unknown, requestId: string, status = 200): Response {
@@ -31,6 +33,26 @@ export default {
         phase: 33,
         implementation: "canonical-foundation"
       }, context.requestId);
+    }
+
+    if (request.method === "GET" && url.pathname === "/api/database/health") {
+      try {
+        const database = await readCanonicalDatabaseStatus(env);
+        return json({
+          service: "legax",
+          status: "ok",
+          database
+        }, context.requestId);
+      } catch (error) {
+        const code = error instanceof Error ? error.message : "DATABASE_ERROR";
+        return problem(
+          context.requestId,
+          503,
+          code,
+          "Canonical database unavailable",
+          "The LegaX runtime cannot establish a verified connection to the canonical database contract."
+        );
+      }
     }
 
     if (request.method === "GET" && url.pathname === "/api/runtime-contract") {
