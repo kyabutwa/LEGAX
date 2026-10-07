@@ -128,7 +128,7 @@ jobs:
           PASSWORD="LegaXProbe12345!"
           export PROBE_EMAIL="$EMAIL"
           rm -f /tmp/legax-probe-tail.log /tmp/legax-probe-response
-          (timeout 25s npx wrangler tail legax --env production --format json --status error --sampling-rate 1 > /tmp/legax-probe-tail.log 2>&1) &
+          (timeout 25s npx wrangler tail legax --format json --status error --sampling-rate 0.99 > /tmp/legax-probe-tail.log 2>&1) &
           TAIL_PID=$!
           sleep 6
           STATUS="$(curl -sS -o /tmp/legax-probe-response -w '%{http_code}' --max-time 15 -X POST 'https://legax.kyabutwabis-f.workers.dev/account' -H 'content-type: application/x-www-form-urlencoded' --data-urlencode 'action=create' --data-urlencode 'display_name=LegaX Exception Probe' --data-urlencode "email=$EMAIL" --data-urlencode "password=$PASSWORD")"
