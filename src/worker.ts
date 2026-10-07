@@ -18,7 +18,7 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  try{
   const context=createRequestContext(request),url=new URL(request.url);requestId=context.requestId;pathname=url.pathname;
   if(pathname==="/account/recovery"||pathname==="/account/recovery/")return handleRecovery(request,env);
-  if(["/communities","/providers","/organizations","/services","/market","/orders","/account/settings"].includes(pathname))return handleOperating(request,env,pathname);
+  if(["/communities","/providers","/organizations","/services","/market","/commerce","/orders","/teams","/requests","/activity","/account/settings"].includes(pathname))return handleOperating(request,env,pathname);
   if(pathname==="/account"||pathname==="/account/")return handleAccountEntry(request,env);
   if(pathname==="/join"||pathname==="/join/")return renderJoin();
   if(pathname==="/onboarding"||pathname==="/onboarding/")return handleOnboarding(request,env);
