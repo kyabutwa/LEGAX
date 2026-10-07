@@ -102,7 +102,7 @@ Telemetry MUST NOT automatically become canonical business history.
 
 Every event MUST have a unique **event_id** within its declared identity model.
 
-CloudEvents establishes a strong interoperability baseline around source + id uniqueness and a stable event envelope. LegaX adopts that principle while adding its own domain identity and governance semantics. citeturn0search0turn0search1
+CloudEvents establishes a strong interoperability baseline around source + id uniqueness and a stable event envelope. LegaX adopts that principle while adding its own domain identity and governance semantics.
 
 LegaX must distinguish:
 
@@ -136,7 +136,7 @@ For example:
 
 Dynamic identifiers MUST NOT be embedded in event type names.
 
-OpenTelemetry's current event semantic conventions similarly require event names to identify event structures rather than individual dynamic occurrences. citeturn0search3
+OpenTelemetry's current event semantic conventions similarly require event names to identify event structures rather than individual dynamic occurrences.
 
 ## 6. Source identity
 
@@ -194,7 +194,7 @@ Not every field is mandatory for every event. Requirement level is event-type sp
 
 ## 8. CloudEvents alignment
 
-LegaX should use CloudEvents-compatible semantics at integration boundaries because CloudEvents provides a vendor-neutral event information model and standardized context attributes. citeturn0search0
+LegaX should use CloudEvents-compatible semantics at integration boundaries because CloudEvents provides a vendor-neutral event information model and standardized context attributes.
 
 LegaX should align conceptually with:
 
@@ -250,7 +250,7 @@ LegaX must distinguish:
 
 Changing a producer implementation does not automatically mean the event schema changed.
 
-CloudEvents explicitly leaves payload schema evolution to event producers and identifies type and dataschema as important tools for communicating event structure. citeturn0search1
+CloudEvents explicitly leaves payload schema evolution to event producers and identifies type and dataschema as important tools for communicating event structure.
 
 ## 11. Compatibility rules
 
@@ -400,7 +400,7 @@ LegaX must distinguish:
 - recorded_at;
 - effective_at.
 
-OpenTelemetry's event conventions require event timestamp to represent when the event occurred and treat observed time separately. citeturn0search3
+OpenTelemetry's event conventions require event timestamp to represent when the event occurred and treat observed time separately.
 
 An offline device may produce:
 
@@ -490,7 +490,7 @@ Correlation does not mean every event caused every other event.
 
 Where event processing participates in distributed tracing, LegaX should propagate W3C Trace Context identifiers.
 
-W3C Trace Context standardizes `traceparent` and `tracestate` for cross-system trace-context propagation. citeturn0search2
+W3C Trace Context standardizes `traceparent` and `tracestate` for cross-system trace-context propagation.
 
 Trace IDs and event IDs are complementary:
 
@@ -936,7 +936,7 @@ Retention should consider:
 
 No universal infinite-retention default.
 
-NIST log-management guidance emphasizes defining generation, transmission, storage, protection and disposal requirements according to organizational needs and risk. citeturn0search6turn0search8
+NIST log-management guidance emphasizes defining generation, transmission, storage, protection and disposal requirements according to organizational needs and risk.
 
 ## 54. Event archival
 
@@ -1452,7 +1452,7 @@ Events communicate facts/assertions according to their declared semantics.
 
 Event processing should integrate with OpenTelemetry tracing/logging without confusing observability records with domain events.
 
-OpenTelemetry recommends standardized correlation of logs and traces using trace context, improving cross-component diagnostics. citeturn0search5turn0search7
+OpenTelemetry recommends standardized correlation of logs and traces using trace context, improving cross-component diagnostics.
 
 Recommended operational linkage:
 
@@ -1964,11 +1964,11 @@ Phase 17 operationalizes this distinction through explicit event identity, prove
 
 Phase 17 was checked against current authoritative/mature material including:
 
-- CNCF CloudEvents specification for interoperable event envelopes, source/id identity, event type, subject, time, schema and event-data separation. citeturn0search0turn0search1
-- W3C Trace Context for distributed request/trace propagation through `traceparent` and `tracestate`. citeturn0search2
-- OpenTelemetry event semantic conventions for named occurrences, event timestamps, event naming and structured attributes. citeturn0search3
-- OpenTelemetry logs/trace correlation guidance for operational correlation without conflating telemetry with domain truth. citeturn0search5turn0search7
-- NIST log-management guidance for event generation, transmission, storage, protection, retention and disposal. citeturn0search6turn0search8
+- CNCF CloudEvents specification for interoperable event envelopes, source/id identity, event type, subject, time, schema and event-data separation.
+- W3C Trace Context for distributed request/trace propagation through `traceparent` and `tracestate`.
+- OpenTelemetry event semantic conventions for named occurrences, event timestamps, event naming and structured attributes.
+- OpenTelemetry logs/trace correlation guidance for operational correlation without conflating telemetry with domain truth.
+- NIST log-management guidance for event generation, transmission, storage, protection, retention and disposal.
 - Existing LegaX Phases 01–16 as the primary semantic, relationship, state and execution contracts.
 
 Research informs interoperability and engineering quality; LegaX's canonical authority model remains primary.
