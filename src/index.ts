@@ -63,7 +63,7 @@ export default {
         canonicalFlow:
           "REQUEST → AUTHENTICATION → CONTEXT → AUTHORIZATION → COMMAND → CORE EXECUTION → EVENT → EVIDENCE",
         deferredUntilCanonicalDependencies:
-          ["database", "authentication", "authorization-runtime", "core-execution"]
+          ["authentication", "authorization-runtime", "core-execution"]
       }, context.requestId);
     }
 
