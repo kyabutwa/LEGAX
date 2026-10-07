@@ -14,5 +14,8 @@
   "devDependencies": {
     "typescript": "^5.9.2",
     "wrangler": "^4.102.0"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.0.1"
   }
 }
