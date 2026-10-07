@@ -33,8 +33,8 @@ jobs:
       - name: Deploy hardened Worker
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         run: |
-          printf '%s' "$DATABASE_URL" | npx wrangler secret put DATABASE_URL --env production
           npx wrangler deploy src/worker.ts --env production
+          printf '%s' "$DATABASE_URL" | npx wrangler secret put DATABASE_URL --env production
 
       - name: Verify production runtime
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
