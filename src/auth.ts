@@ -40,34 +40,30 @@ export async function createAccount(env:AuthEnv,input:{email:string,password:str
  if(existing.length) throw new Error("ACCOUNT_ALREADY_EXISTS");
 
  const secret=await passwordHash(input.password);
- const rows=await sql`WITH e AS (
-   INSERT INTO legax.entities(entity_type,canonical_name,display_name,lifecycle_state,effective_from)
-   VALUES ('PERSON',${name},${name},'ACTIVE',now()) RETURNING entity_id
- ), p AS (
-   INSERT INTO legax.persons(entity_id,display_name)
-   SELECT entity_id,${name} FROM e RETURNING entity_id
- ), i AS (
-   INSERT INTO legax.identities(entity_id,identity_type,state,verification_state)
-   SELECT entity_id,'PERSON','ACTIVE','UNVERIFIED' FROM e RETURNING identity_id
- ), a AS (
-   INSERT INTO legax.accounts(identity_id,state)
-   SELECT identity_id,'ACTIVE' FROM i RETURNING account_id,identity_id
- ), c AS (
-   INSERT INTO legax.credentials(account_id,credential_type,state,subject_reference,verification_state,secret_reference)
-   SELECT account_id,'EMAIL_PASSWORD','ACTIVE',${email},'UNVERIFIED',${secret} FROM a
-   RETURNING account_id,credential_id
- ), pa AS (
-   UPDATE legax.accounts a
-   SET primary_credential_id=c.credential_id,updated_at=now()
-   FROM c
-   WHERE a.account_id=c.account_id
-   RETURNING a.account_id
- ), s AS (
-   INSERT INTO legax.account_settings(account_id) SELECT account_id FROM pa RETURNING account_id
- )
- SELECT account_id FROM s`;
- if(!rows.length) throw new Error("ACCOUNT_CREATE_FAILED");
- return startSession(env,rows[0].account_id as string);
+ const entityId=crypto.randomUUID();
+ const identityId=crypto.randomUUID();
+ const accountId=crypto.randomUUID();
+ const credentialId=crypto.randomUUID();
+
+ await sql.transaction([
+   sql`INSERT INTO legax.entities(entity_id,entity_type,canonical_name,display_name,lifecycle_state,effective_from)
+        VALUES(${entityId},'PERSON',${name},${name},'ACTIVE',now())`,
+   sql`INSERT INTO legax.persons(entity_id,display_name)
+        VALUES(${entityId},${name})`,
+   sql`INSERT INTO legax.identities(identity_id,entity_id,identity_type,state,verification_state)
+        VALUES(${identityId},${entityId},'PERSON','ACTIVE','UNVERIFIED')`,
+   sql`INSERT INTO legax.accounts(account_id,identity_id,state)
+        VALUES(${accountId},${identityId},'ACTIVE')`,
+   sql`INSERT INTO legax.credentials(credential_id,account_id,credential_type,state,subject_reference,verification_state,secret_reference)
+        VALUES(${credentialId},${accountId},'EMAIL_PASSWORD','ACTIVE',${email},'UNVERIFIED',${secret})`,
+   sql`UPDATE legax.accounts
+        SET primary_credential_id=${credentialId},updated_at=now()
+        WHERE account_id=${accountId}`,
+   sql`INSERT INTO legax.account_settings(account_id)
+        VALUES(${accountId})`,
+ ]);
+
+ return startSession(env,accountId);
 }
 
 export async function signIn(env:AuthEnv,input:{email:string,password:string}){
