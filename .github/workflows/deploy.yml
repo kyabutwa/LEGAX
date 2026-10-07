@@ -120,6 +120,30 @@ jobs:
         background: true
         run: npx wrangler tail legax --env production --format json --status error --sampling-rate 1
 
+      - name: Direct Worker exception probe
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
+        run: |
+          set +e
+          EMAIL="legax-probe-$(date +%s)-$RANDOM@example.invalid"
+          PASSWORD="LegaXProbe12345!"
+          rm -f /tmp/legax-probe-tail.log /tmp/legax-probe-response
+          (timeout 25s npx wrangler tail legax --env production --format json --status error --sampling-rate 1 > /tmp/legax-probe-tail.log 2>&1) &
+          TAIL_PID=$!
+          sleep 6
+          STATUS="$(curl -sS -o /tmp/legax-probe-response -w '%{http_code}' --max-time 15 -X POST 'https://legax.kyabutwabis-f.workers.dev/account' -H 'content-type: application/x-www-form-urlencoded' --data-urlencode 'action=create' --data-urlencode 'display_name=LegaX Exception Probe' --data-urlencode "email=$EMAIL" --data-urlencode "password=$PASSWORD")"
+          echo "Direct probe HTTP status: $STATUS"
+          sleep 4
+          kill "$TAIL_PID" 2>/dev/null || true
+          wait "$TAIL_PID" 2>/dev/null || true
+          echo "----- Direct probe response -----"
+          cat /tmp/legax-probe-response
+          echo "----- Worker tail exceptions -----"
+          cat /tmp/legax-probe-tail.log
+          node --input-type=module <<'NODE'
+          import { neon } from "@neondatabase/serverless";
+          const sql=neon(process.env.DATABASE_URL);
+          const email=""
+          NODE
       - name: Functional account lifecycle verification
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         env:
