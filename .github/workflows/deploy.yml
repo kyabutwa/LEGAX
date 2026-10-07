@@ -22,6 +22,13 @@ jobs:
       - run: npm install
       - run: npm run typecheck
       - run: npm run build
+      - name: Resolve Cloudflare account ID
+        if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID == '' }}
+        run: |
+          ACCOUNT_ID="$(npx wrangler whoami --json | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{const j=JSON.parse(s);const a=(j.accounts && j.accounts[0] && j.accounts[0].id) || j.account_id || j.accountId || "";if(!/^[a-f0-9]{32}$/.test(a)){process.exit(1)}process.stdout.write(a)})')"
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT_ID" >> "$GITHUB_ENV"
+          echo "Resolved Cloudflare account identity from the authenticated Wrangler token."
+
       - name: Deploy to Cloudflare
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         run: |
