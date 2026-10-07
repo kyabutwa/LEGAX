@@ -71,3 +71,4 @@ test("Canonical migration is non-duplicating",async()=>{
  assert.match(migration,/canonical_schema = 'legax'/);
  assert.doesNotMatch(migration,/CREATE SCHEMA legax/);
 });
+
