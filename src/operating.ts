@@ -28,7 +28,7 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
  try{
   if(request.method==="POST"){
    const form=await request.formData(), action=String(form.get("action")||"");
-   if(action==="create-context")return await createContext(env,account,path,String(form.get("name")||"").trim());
+   if(action==="request-context")return await requestContext(env,account,path,String(form.get("name")||"").trim());
    if(action==="request-community")return await requestCommunity(env,account,String(form.get("community_entity_id")||""));
   }
   if(path==="/communities")return await communities(env);
@@ -37,6 +37,9 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
   if(path==="/services")return await services(env);
   if(path==="/market")return await market(env);
   if(path==="/orders")return await orders(env,account);
+  if(path==="/teams")return await teams(env);
+  if(path==="/requests")return await requests(env,account);
+  if(path==="/activity")return await activity(env);
   if(path==="/account/settings")return await settings(env,account);
   return page("Not found","Overview",shell("Not found","LegaX","The requested operating surface does not exist.","<section class=notice>Choose a real LegaX operating surface from home.</section>"));
  }catch(error){
@@ -45,28 +48,19 @@ export async function handleOperating(request:Request,env:AuthEnv,path:string):P
  }
 }
 
-async function createContext(env:AuthEnv,account:any,path:string,name:string):Promise<Response>{
- if(name.length<2||name.length>160) return page("Create context","Account",shell("Name required","Governed context","Enter a clear name for the context.","<section class=notice>Use at least 2 characters.</section><a class=button href=\""+esc(path)+"\">Back</a>"));
+async function requestContext(env:AuthEnv,account:any,path:string,name:string):Promise<Response>{
+ if(name.length<2||name.length>160)return page("Request context","Account",shell("Name required","Governed onboarding","Enter a clear proposed context name.","<section class=notice>Use at least 2 characters.</section><a class=button href=\""+esc(path)+"\">Back</a>"));
  const kind:Kind=path==="/providers"?"provider":path==="/organizations"?"organization":"community";
+ const actionType=kind==="community"?"CREATE_COMMUNITY_CONTEXT":kind==="provider"?"CREATE_PROVIDER_CONTEXT":"CREATE_ORGANIZATION_CONTEXT";
  const sql=db(env);
- const identity=await sql`SELECT i.identity_id,i.entity_id FROM legax.accounts a JOIN legax.identities i ON i.identity_id=a.identity_id WHERE a.account_id=${account.account_id} LIMIT 1`;
+ const identity=await sql`SELECT i.entity_id FROM legax.accounts a JOIN legax.identities i ON i.identity_id=a.identity_id WHERE a.account_id=${account.account_id} LIMIT 1`;
  if(!identity.length)throw new Error("IDENTITY_NOT_FOUND");
- const owner=identity[0].entity_id, entityId=crypto.randomUUID(), workspaceId=crypto.randomUUID(), now=new Date().toISOString();
- const entityType=kind==="community"?"COMMUNITY":kind==="provider"?"PROVIDER":"ORGANIZATION";
- const workspaceType=kind==="community"?"COMMUNITY_OPERATING":kind==="provider"?"PROVIDER_OPERATING":"ORGANIZATION_OPERATING";
- await sql`INSERT INTO legax.entities(entity_id,entity_type,canonical_name,display_name,lifecycle_state,effective_from) VALUES(${entityId},${entityType},${name},${name},'ACTIVE',now())`;
- await sql`INSERT INTO legax.workspaces(id,workspace_type,name,purpose,scope_ref,lifecycle,governance_ref,version,created_at,updated_at) VALUES(${workspaceId},${workspaceType},${name},${kind+" operating context"},${entityId},'ACTIVE',${entityId},1,${now},${now})`;
- if(kind==="community"){
-  await sql`INSERT INTO legax.community_profiles(community_entity_id,workspace_id,operator_entity_id,onboarding_state) VALUES(${entityId},${workspaceId},${owner},'ACTIVE')`;
- }else if(kind==="provider"){
-  await sql`INSERT INTO legax.provider_profiles(provider_entity_id,workspace_id,onboarding_state) VALUES(${entityId},${workspaceId},'ACTIVE')`;
- }else{
-  await sql`INSERT INTO legax.organization_profiles(organization_entity_id,workspace_id,onboarding_state) VALUES(${entityId},${workspaceId},'ACTIVE')`;
- }
- await sql`INSERT INTO legax.participations(identity_id,context_entity_id,state,scope,effective_from) VALUES(${identity[0].identity_id},${entityId},'ACTIVE',${JSON.stringify({relationship_type:kind.toUpperCase()+"_OPERATOR",source:"SELF_ONBOARDING"})}::jsonb,now())`;
- return new Response(null,{status:303,headers:{location:path}});
+ const principal=identity[0].entity_id;
+ const authorizationId=crypto.randomUUID(),requestId=crypto.randomUUID();
+ await sql`INSERT INTO legax.authorization_requests(authorization_id,request_id,principal_entity_id,action_type,request_purpose,request_state,created_at,updated_at)
+ VALUES(${authorizationId},${requestId},${principal},${actionType},${JSON.stringify({proposed_name:name,context_kind:kind,source:"LegaX onboarding"})},'RECEIVED',now(),now())`;
+ return page("Request received","Account",shell("Operating context requested","Governed onboarding","LegaX recorded the request without pretending that authentication itself grants operating authority.",`<section class="notice"><strong>Pending authorization</strong><br>Proposed ${esc(kind)}: <b>${esc(name)}</b><br>Request: ${esc(requestId)}</section><a class="button primary" href="/requests">Open requests</a> <a class="button secondary" href="${esc(path)}">Back to ${esc(kind)}s</a>`));
 }
-
 async function communities(env:AuthEnv):Promise<Response>{
  const sql=db(env);
  const rows=await sql`SELECT e.entity_id,e.display_name,cp.onboarding_state,cp.plan_state,cp.created_at,COUNT(cr.id)::int AS roster_count FROM legax.community_profiles cp JOIN legax.entities e ON e.entity_id=cp.community_entity_id LEFT JOIN legax.community_roster cr ON cr.community_entity_id=cp.community_entity_id AND cr.state='ACTIVE' GROUP BY e.entity_id,e.display_name,cp.onboarding_state,cp.plan_state,cp.created_at ORDER BY cp.created_at DESC LIMIT 50`;
@@ -90,7 +84,7 @@ async function contexts(env:AuthEnv,kind:"provider"|"organization"):Promise<Resp
   : await sql`SELECT e.entity_id,e.display_name,p.onboarding_state,p.created_at FROM legax.organization_profiles p JOIN legax.entities e ON e.entity_id=p.organization_entity_id ORDER BY p.created_at DESC LIMIT 50`;
  const cards=rows.map((r:any)=>`<article class="ops-card"><strong>${esc(String(r.display_name||type))}</strong><span>Operating context ready for configuration.</span><b>${esc(String(r.onboarding_state))}</b></article>`).join("");
  const label=kind==="provider"?"Providers":"Organizations";
- return page(label,"Overview",shell(label,kind==="provider"?"20C · Provider network":"20B · Organization network",kind==="provider"?"Providers expose services, teams, capacity, delivery and customer operations.":"Organizations operate governance, teams, work, resources and services.",`<div class="ops-grid">${cards||"<section class=notice>No "+label.toLowerCase()+" has joined yet. The creation workflow is ready.</section>"}</div><form class="ops-form" method="post"><input type="hidden" name="action" value="create-context"><label>Name<input name="name" required maxlength="160" placeholder="Your ${kind} name"></label><button type="submit">Create ${kind} operating context</button></form>`));
+ return page(label,"Overview",shell(label,kind==="provider"?"20C · Provider network":"20B · Organization network",kind==="provider"?"Providers expose services, teams, capacity, delivery and customer operations.":"Organizations operate governance, teams, work, resources and services.",`<div class="ops-grid">${cards||"<section class=notice>No "+label.toLowerCase()+" has joined yet. The creation workflow is ready.</section>"}</div><form class="ops-form" method="post"><input type="hidden" name="action" value="request-context"><label>Name<input name="name" required maxlength="160" placeholder="Your ${kind} name"></label><button type="submit">Request ${kind} operating context</button></form>`));
 }
 
 async function services(env:AuthEnv):Promise<Response>{
@@ -109,6 +103,27 @@ async function orders(env:AuthEnv,account:any):Promise<Response>{
  const sql=db(env);const rows=await sql`SELECT o.order_id,o.order_state,o.payment_state,o.fulfillment_state,o.total_amount,o.currency_code,o.created_at FROM legax.commerce_orders o LEFT JOIN legax.commerce_fulfillments f ON f.order_id=o.order_id JOIN legax.accounts a ON a.account_id=${account.account_id} JOIN legax.identities i ON i.identity_id=a.identity_id WHERE o.buyer_entity_id=i.entity_id ORDER BY o.created_at DESC LIMIT 50`;
  const cards=rows.map((r:any)=>`<article class="ops-card"><strong>Order ${esc(String(r.order_id).slice(0,8))}</strong><span>${esc(String(r.total_amount))} ${esc(String(r.currency_code||""))}</span><b>${esc(String(r.order_state))} · ${esc(String(r.payment_state))} · ${esc(String(r.fulfillment_state))}</b></article>`).join("");
  return page("Orders","Services",shell("Orders","Commerce","Order, payment and fulfillment states remain separate so a payment or provider response never masquerades as delivery.",`<div class="ops-grid">${cards||"<section class=notice>No orders yet.</section>"}</div>`));
+}
+
+async function teams(env:AuthEnv):Promise<Response>{
+ const sql=db(env);
+ const rows=await sql`SELECT t.team_id,t.name,t.team_type,t.lifecycle_state,e.display_name AS owner_name,COUNT(tm.team_membership_id)::int AS member_count FROM legax.operating_teams t JOIN legax.entities e ON e.entity_id=t.owner_entity_id LEFT JOIN legax.team_memberships tm ON tm.team_id=t.team_id AND tm.status='ACTIVE' GROUP BY t.team_id,t.name,t.team_type,t.lifecycle_state,e.display_name ORDER BY t.created_at DESC LIMIT 100`;
+ const cards=rows.map((r:any)=>`<article class="ops-card"><strong>${esc(String(r.name))}</strong><span>${esc(String(r.team_type))} · owner ${esc(String(r.owner_name))}</span><span>${esc(String(r.member_count))} active member records</span><b>${esc(String(r.lifecycle_state))}</b></article>`).join("");
+ return page("Teams","People",shell("Teams","Operating network","Teams are operational units for work, service delivery, security, maintenance, dispatch and management. Membership is a relationship; it is not automatic authority.",`<div class="ops-grid">${cards||"<section class=notice>No operating teams exist yet.</section>"}</div>`));
+}
+
+async function requests(env:AuthEnv,account:any):Promise<Response>{
+ const sql=db(env);
+ const rows=await sql`SELECT authorization_id,request_id,action_type,request_state,request_purpose,created_at FROM legax.authorization_requests WHERE principal_entity_id=(SELECT i.entity_id FROM legax.accounts a JOIN legax.identities i ON i.identity_id=a.identity_id WHERE a.account_id=${account.account_id} LIMIT 1) ORDER BY created_at DESC LIMIT 50`;
+ const cards=rows.map((r:any)=>`<article class="ops-card"><strong>${esc(String(r.action_type))}</strong><span>${esc(String(r.request_id))}</span><span>${esc(String(r.request_purpose||"Governed request"))}</span><b>${esc(String(r.request_state))}</b></article>`).join("");
+ return page("Requests","Activity",shell("Requests","Authorization and service work","Requests are first-class records. They can be evaluated, authorized and then executed by the canonical engine; submitting a request does not itself create authority.",`<div class="ops-grid">${cards||"<section class=notice>No requests for this identity yet.</section>"}</div>`));
+}
+
+async function activity(env:AuthEnv):Promise<Response>{
+ const sql=db(env);
+ const rows=await sql`SELECT id,event_type,subject_type,truth_state,source_type,occurred_at FROM legax.events ORDER BY occurred_at DESC LIMIT 100`;
+ const cards=rows.map((r:any)=>`<article class="ops-card"><strong>${esc(String(r.event_type))}</strong><span>${esc(String(r.subject_type||"event"))} · ${esc(String(r.source_type))}</span><b>${esc(String(r.truth_state))} · ${esc(String(r.occurred_at))}</b></article>`).join("");
+ return page("Activity","Activity",shell("Activity","Events and evidence","The activity surface reads the canonical event stream. It does not invent actions from UI state and does not treat projections as authority.",`<div class="ops-grid">${cards||"<section class=notice>No canonical events recorded yet.</section>"}</div>`));
 }
 
 async function settings(env:AuthEnv,account:any):Promise<Response>{
