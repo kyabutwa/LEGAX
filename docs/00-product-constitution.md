@@ -4,7 +4,7 @@
 
 **Canonical definition**
 
-LegaX is an intelligent Identity and Access Management living infrastructure designed to provide a unified foundation for voluntarily participating people, communities, organizations, providers, workers, devices, systems, and LegaX services to establish trusted identity, participate in defined contexts, manage relationships and responsibilities, govern authority, determine and enforce authorization, and securely access digital, physical, economic, and social resources.
+LegaX is an intelligent Identity and Access Management living infrastructure designed to provide a unified foundation ready ecosystem for voluntarily participating people, communities, organizations, providers, workers, devices, systems, and LegaX services to establish trusted identity, participate in defined contexts, manage relationships and responsibilities, govern authority, determine and enforce authorization, and securely access digital, physical, economic, and social resources.
 
 LegaX connects identity and participation with buildings, units, places, facilities, devices, services, payments, commerce, work, mobility, community operations, infrastructure, and other real-world and digital systems through a common control and integration model. Each domain and LegaX service may operate according to its own purpose and lifecycle while relying on shared foundations for identity, authentication, account representation, participation, context, administration, authority, authorization, access, credentials, policy, lifecycle, events, evidence, security, and auditability.
 
