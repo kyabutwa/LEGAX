@@ -106,7 +106,7 @@ async function market(env:AuthEnv):Promise<Response>{
 }
 
 async function orders(env:AuthEnv,account:any):Promise<Response>{
- const sql=db(env);const rows=await sql`SELECT o.order_id,o.order_state,o.payment_state,o.fulfillment_state,o.total_amount,o.currency_code,o.created_at FROM legax.commerce_orders o JOIN legax.accounts a ON a.account_id=${account.account_id} JOIN legax.identities i ON i.identity_id=a.identity_id WHERE o.buyer_entity_id=i.entity_id ORDER BY o.created_at DESC LIMIT 50`;
+ const sql=db(env);const rows=await sql`SELECT o.order_id,o.order_state,o.payment_state,o.fulfillment_state,o.total_amount,o.currency_code,o.created_at FROM legax.commerce_orders o LEFT JOIN legax.commerce_fulfillments f ON f.order_id=o.order_id JOIN legax.accounts a ON a.account_id=${account.account_id} JOIN legax.identities i ON i.identity_id=a.identity_id WHERE o.buyer_entity_id=i.entity_id ORDER BY o.created_at DESC LIMIT 50`;
  const cards=rows.map((r:any)=>`<article class="ops-card"><strong>Order ${esc(String(r.order_id).slice(0,8))}</strong><span>${esc(String(r.total_amount))} ${esc(String(r.currency_code||""))}</span><b>${esc(String(r.order_state))} · ${esc(String(r.payment_state))} · ${esc(String(r.fulfillment_state))}</b></article>`).join("");
  return page("Orders","Services",shell("Orders","Commerce","Order, payment and fulfillment states remain separate so a payment or provider response never masquerades as delivery.",`<div class="ops-grid">${cards||"<section class=notice>No orders yet.</section>"}</div>`));
 }
