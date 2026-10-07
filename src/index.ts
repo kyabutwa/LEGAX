@@ -4,9 +4,9 @@ import { createRequestContext } from "./core/runtime";
 import { problem } from "./http/problem";
 import { renderControlPlane } from "./ui/control-plane";
 import { renderLandingPage } from "./ui/landing";
-import { handleAccount } from "./account";
+import { handleAccountEntry } from "./account-entry";
 import { renderJoin } from "./join";
-import { handleOnboarding } from "./onboarding";
+import { handleOnboarding } from "./onboarding-entry";
 
 export interface Env { ENVIRONMENT:string; DATABASE_URL?:string; }
 
@@ -17,7 +17,7 @@ function json(data:unknown,requestId:string,status=200):Response{
 export default {async fetch(request:Request,env:Env):Promise<Response>{
  try {
  const context=createRequestContext(request); const url=new URL(request.url);
- if(url.pathname==="/account" || url.pathname==="/account/") return handleAccount(request,env);
+ if(url.pathname==="/account" || url.pathname==="/account/") return handleAccountEntry(request,env);
  if(url.pathname==="/join" || url.pathname==="/join/") return renderJoin();
  if(url.pathname==="/onboarding" || url.pathname==="/onboarding/") return handleOnboarding(request,env);
  if(request.method==="GET" && url.pathname==="/") return renderLandingPage();
