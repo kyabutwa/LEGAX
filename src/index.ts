@@ -3,6 +3,7 @@ import { CORE_RULES } from "./core/contracts";
 import { createRequestContext } from "./core/runtime";
 import { problem } from "./http/problem";
 import { renderControlPlane } from "./ui/control-plane";
+import { renderLandingPage } from "./ui/landing";
 import { handleAccount } from "./account";
 
 export interface Env { ENVIRONMENT:string; DATABASE_URL?:string; }
@@ -14,6 +15,7 @@ function json(data:unknown,requestId:string,status=200):Response{
 export default {async fetch(request:Request,env:Env):Promise<Response>{
  const context=createRequestContext(request); const url=new URL(request.url);
  if(url.pathname==="/account" || url.pathname==="/account/") return handleAccount(request,env);
+ if(request.method==="GET" && url.pathname==="/") return renderLandingPage();
  if(request.method==="GET" && !url.pathname.startsWith("/api/")) return renderControlPlane(url.pathname);
  if(request.method==="GET" && url.pathname==="/api/health") return json({service:"legax",status:"ok",environment:env.ENVIRONMENT,runtime:"cloudflare-workers",phase:33,implementation:"canonical-foundation"},context.requestId);
  if(request.method==="GET" && url.pathname==="/api/database/health"){
