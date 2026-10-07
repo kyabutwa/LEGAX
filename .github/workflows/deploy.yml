@@ -118,7 +118,7 @@ jobs:
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
         continue-on-error: true
         background: true
-        run: npx wrangler tail legax --env production --format json --status error --sampling-rate 0.99
+        run: npx wrangler tail legax --format json --status error --sampling-rate 0.99
 
       - name: Direct Worker exception probe
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
