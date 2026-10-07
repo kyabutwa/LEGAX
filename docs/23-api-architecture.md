@@ -313,6 +313,8 @@ Development, test, staging and production are distinct environments. Production 
 
 API Architecture is cross-cutting. It exposes the contracts established by 01 LegaX through 22 Privacy/Governance without replacing Identity, Authentication, Account, Administration, Authorization, Access, Resources, Economic & Commerce, Lifecycle, Events/Evidence/Intelligence, LegaServices, Domain/Relationship/State contracts, Command/Execution, Provider/Adapter, Community/Organization/Provider operating systems, Security or Privacy/Governance.
 
+Explicit dependency mapping: Phase 06 Authorization remains the authorization engine; Phase 16 Command & Execution remains the consequential execution contract; Phase 17 Canonical Event Contract remains the event contract; Phase 18 Evidence Contract remains the evidence contract; Phase 19 Provider/Adapter Architecture remains the external integration boundary; 20A Community Management Network OS, 20B Organization Management Network OS and 20C Provider Management Network OS remain their respective operating domains; Phase 21 Security Architecture remains the security architecture; Phase 22 Privacy/Governance Architecture remains the privacy and governance boundary.
+
 ## 49. Canonical API flow
 
 CLIENT/CONSUMER → DISCOVERY → VERSION → TRANSPORT → AUTHENTICATION → CONTEXT → PRIVACY/GOVERNANCE → AUTHORIZATION → CONTRACT VALIDATION → DOMAIN VALIDATION → PRECONDITION → COMMAND/QUERY → EXECUTION/READ → EVENT/EVIDENCE → RESPONSE/ASYNC OUTCOME → OBSERVABILITY → RECONCILIATION.
