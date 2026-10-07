@@ -61,7 +61,7 @@ test("Phase 33 canonical runtime and account entry are wired",async()=>{
  assert.match(operating,/provider_profiles/);
  assert.match(operating,/organization_profiles/);
  assert.match(operating,/Request to join/);
- assert.match(onboardingEntry,/action=\\"create-context\\"/);
+ assert.match(onboardingEntry,/value=\\"create-context\\"/);
  assert.match(index,/export \{ default \} from ".\/worker"/);
  assert.match(entrypoint,/"main": "src\/worker.ts"/);
  assert.doesNotMatch(landing,/dashboard|social proof|testimonials|Choose your LegaX path/i);
