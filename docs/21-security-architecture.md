@@ -83,7 +83,7 @@ Canonical path:
 
 **REQUEST → IDENTIFY → AUTHENTICATE → ESTABLISH CONTEXT → EVALUATE AUTHORITY → AUTHORIZE → ENFORCE → OBSERVE → REASSESS**
 
-NIST Zero Trust focuses protection on users, assets and resources rather than network location; LegaX adopts that principle. citeturn0search1turn0search11
+NIST Zero Trust focuses protection on users, assets and resources rather than network location; LegaX adopts that principle.
 
 ## 7. Security layers
 
@@ -160,7 +160,7 @@ Authentication mechanisms may include passkeys, hardware keys, passwords where p
 
 Authentication security requires assurance, factor binding, freshness, replay resistance, lifecycle, recovery and revocation.
 
-NIST SP 800-63-4, finalized in July 2025, covers identity proofing, authenticators, authentication, federation and related assertions. LegaX uses these as security reference concepts, not as a replacement for its canonical identity/authority model. citeturn0search0turn0search20
+NIST SP 800-63-4, finalized in July 2025, covers identity proofing, authenticators, authentication, federation and related assertions. LegaX uses these as security reference concepts, not as a replacement for its canonical identity/authority model.
 
 ## 12. Biometric security
 
@@ -232,7 +232,7 @@ Applications and APIs require input validation, secure output handling, injectio
 
 Every consequential API defines caller identity, authorization, target scope, schema, rate limits, idempotency, replay handling, error semantics and audit behavior.
 
-OWASP ASVS 5.0 provides a current application-security verification baseline for secure development and testing. citeturn0search2
+OWASP ASVS 5.0 provides a current application-security verification baseline for secure development and testing.
 
 ## 19. Service, workload and tenant security
 
@@ -362,7 +362,7 @@ AI finding ≠ confirmed compromise.
 
 AI cannot silently grant authority.
 
-NIST AI RMF uses Govern, Map, Measure and Manage as continuous AI-risk-management functions. citeturn0search19
+NIST AI RMF uses Govern, Map, Measure and Manage as continuous AI-risk-management functions.
 
 ## 30. Secure development and deployment
 
@@ -390,7 +390,7 @@ Security governance establishes objectives, risk appetite, control ownership, ac
 
 Control ownership should identify control owner, operational owner, system/resource owner, reviewer and escalation path.
 
-NIST SP 800-53 provides a broad security/privacy control catalog and SP 800-53A provides assessment procedures; LegaX uses these as assurance references rather than replacing its canonical contracts. citeturn0search5turn0search13
+NIST SP 800-53 provides a broad security/privacy control catalog and SP 800-53A provides assessment procedures; LegaX uses these as assurance references rather than replacing its canonical contracts.
 
 ## 33. Community, organization and provider boundaries
 
@@ -696,4 +696,4 @@ It does not become a second Identity system, second Authorization system, second
 
 **Security may constrain authority. Security may protect authority. Security may detect compromise of authority. Security may revoke or suspend according to governed rules. Security MUST NOT manufacture authority.**
 
-**NO AUTHORIZATION → NO CONSEQUENTIAL LEGAX ACTION.**
+**NO AUTHORIZATION → NO CONSEQUENTIAL LegaX ACTION.**
