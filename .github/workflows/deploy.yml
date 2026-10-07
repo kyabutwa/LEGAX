@@ -126,6 +126,7 @@ jobs:
           set +e
           EMAIL="legax-probe-$(date +%s)-$RANDOM@example.invalid"
           PASSWORD="LegaXProbe12345!"
+          export PROBE_EMAIL="$EMAIL"
           rm -f /tmp/legax-probe-tail.log /tmp/legax-probe-response
           (timeout 25s npx wrangler tail legax --env production --format json --status error --sampling-rate 1 > /tmp/legax-probe-tail.log 2>&1) &
           TAIL_PID=$!
@@ -142,7 +143,20 @@ jobs:
           node --input-type=module <<'NODE'
           import { neon } from "@neondatabase/serverless";
           const sql=neon(process.env.DATABASE_URL);
-          const email=""
+          const email=process.env.PROBE_EMAIL;
+          const rows=await sql`SELECT a.account_id,i.identity_id,e.entity_id FROM legax.accounts a JOIN legax.identities i ON i.identity_id=a.identity_id JOIN legax.entities e ON e.entity_id=i.entity_id JOIN legax.credentials c ON c.account_id=a.account_id WHERE c.credential_type='EMAIL_PASSWORD' AND c.subject_reference=${email} LIMIT 1`;
+          if(rows.length){
+            const {account_id:accountId,identity_id:identityId,entity_id:entityId}=rows[0];
+            await sql`UPDATE legax.accounts SET primary_credential_id=NULL WHERE account_id=${accountId}`;
+            await sql`DELETE FROM legax.sessions WHERE account_id=${accountId}`;
+            await sql`DELETE FROM legax.account_settings WHERE account_id=${accountId}`;
+            await sql`DELETE FROM legax.credentials WHERE account_id=${accountId}`;
+            await sql`DELETE FROM legax.accounts WHERE account_id=${accountId}`;
+            await sql`DELETE FROM legax.persons WHERE entity_id=${entityId}`;
+            await sql`DELETE FROM legax.identities WHERE identity_id=${identityId}`;
+            await sql`DELETE FROM legax.entities WHERE entity_id=${entityId}`;
+            console.log("Direct probe data cleaned up.");
+          }
           NODE
       - name: Functional account lifecycle verification
         if: ${{ env.CLOUDFLARE_API_TOKEN != '' && env.CLOUDFLARE_ACCOUNT_ID != '' && env.DATABASE_URL != '' }}
