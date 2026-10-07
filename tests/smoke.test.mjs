@@ -12,6 +12,7 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
  const auth=await read("../src/auth.ts");
  const account=await read("../src/account.ts");
  const shell=await read("../src/ui/app-shell.ts");
+ const landing=await read("../src/ui/landing.ts");
  const control=await read("../src/ui/control-plane.ts");
 
  assert.match(contracts,/noAuthorizationNoConsequentialAction:\s*true/);
@@ -42,14 +43,18 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
  assert.match(page,/prefers-reduced-motion/);
  assert.match(page,/mark-logo/);
  assert.match(page,/raw\.githubusercontent\.com\/kyabutwa\/LEGAX\/main\/IMG_1700\.jpeg/);
- assert.match(shell,/renderControlPlane/);
+ assert.match(shell,/renderLandingPage/);
+ assert.match(landing,/Create your LegaX account/);
+ assert.match(landing,/The feature we are shipping now/);
+ assert.match(landing,/real account/);
+ assert.doesNotMatch(landing,/dashboard|social proof|testimonials/i);
  assert.match(control,/No authoritative records are loaded into this surface/);
  assert.match(control,/UI presents authority; UI does not create authority/);
  assert.match(control,/Context \/ authorization required/);
 });
 
 test("Phase 33 runtime has no legacy product names",async()=>{
- const files=["../src/core/contracts.ts","../src/core/runtime.ts","../src/http/problem.ts","../src/index.ts","../src/ui/page.ts","../src/ui/app-shell.ts","../src/ui/people.ts","../src/ui/control-plane.ts","../src/data/database.ts","../src/auth.ts","../src/account.ts","../db/migrations/0005_canonical_legax_schema.sql","../wrangler.jsonc","../package.json"];
+ const files=["../src/core/contracts.ts","../src/core/runtime.ts","../src/http/problem.ts","../src/index.ts","../src/ui/page.ts","../src/ui/app-shell.ts","../src/ui/people.ts","../src/ui/control-plane.ts","../src/ui/landing.ts","../src/data/database.ts","../src/auth.ts","../src/account.ts","../db/migrations/0005_canonical_legax_schema.sql","../wrangler.jsonc","../package.json"];
  for(const file of files){const content=await read(file);assert.doesNotMatch(content,/LegaKeys|LegaPin/);}
 });
 
