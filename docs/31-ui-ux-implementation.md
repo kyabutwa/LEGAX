@@ -1979,7 +1979,7 @@ No screen is considered complete merely because it renders.
 
 ## 95. Final architectural rules
 
-**THE UI IS A GOVERNED CLIENT OF LEGAX, NOT A PARALLEL LEGAX.**
+**THE UI IS A GOVERNED CLIENT OF LegaX, NOT A PARALLEL LegaX.**
 
 **THE UI PRESENTS AUTHORITY; IT DOES NOT CREATE AUTHORITY.**
 
@@ -1991,7 +1991,7 @@ No screen is considered complete merely because it renders.
 
 **THE UI MUST MAKE COMPLEXITY UNDERSTANDABLE WITHOUT REMOVING THE UNDERLYING GOVERNANCE.**
 
-**NO AUTHORIZATION → NO CONSEQUENTIAL UI ACTION CAN BECOME A VALID LEGAX ACTION.**
+**NO AUTHORIZATION → NO CONSEQUENTIAL UI ACTION CAN BECOME A VALID LegaX ACTION.**
 
 **NO AUTHORITATIVE OUTCOME → NO FALSE SUCCESS.**
 
@@ -2007,4 +2007,4 @@ No screen is considered complete merely because it renders.
 
 **UI/UX Implementation is the governed human-interface implementation layer through which LegaX makes its canonical architecture understandable, accessible, responsive, secure, privacy-preserving, reliable and operationally usable across people, communities, organizations, providers, services, resources, commerce and intelligent experiences—without creating a parallel authority, execution or source-of-truth system.**
 
-**UI/UX IS IMPLEMENTATION OF LEGAX CONTRACTS, NOT REDEFINITION OF LEGAX CONTRACTS.**
+**UI/UX IS IMPLEMENTATION OF LegaX CONTRACTS, NOT REDEFINITION OF LegaX CONTRACTS.**
