@@ -65,6 +65,6 @@ AI may match trips, estimate arrival, optimize routes, predict demand, identify 
 11. Trip cancellation/refund semantics are explicit.
 12. Duplicate ride commands cannot create duplicate trips.
 
-**Standards alignment:** mobility interoperability should be designed to map to appropriate public-transport and fare specifications where relevant; GTFS supports structured fare products, media, and fare rules. citeturn0search11turn0search14
+**Standards alignment:** mobility interoperability should be designed to map to appropriate public-transport and fare specifications where relevant; GTFS supports structured fare products, media, and fare rules.
 
 **Status:** Advanced service contract — ready for trip, fare, provider-adapter, policy, event, and operational implementation.
