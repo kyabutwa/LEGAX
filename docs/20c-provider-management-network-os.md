@@ -73,21 +73,21 @@ PM-NOS is derived from and cross-checked against:
 19. evidence and reconciliation;
 20. AI-assisted service operations.
 
-ISO/IEC 20000-1 describes a service management system covering planning, design, transition, delivery and improvement of services to meet service requirements. This supports treating PM-NOS as an operating system for service delivery rather than a supplier directory. citeturn0search1
+ISO/IEC 20000-1 describes a service management system covering planning, design, transition, delivery and improvement of services to meet service requirements. This supports treating PM-NOS as an operating system for service delivery rather than a supplier directory.
 
-ITIL 4 emphasizes service value, service value chains, organizations and people, information and technology, partners and suppliers, value streams and processes, and integrated service lifecycle management. PM-NOS therefore needs an operating network connecting service consumers, workers, technology, partners and delivery processes. citeturn1search9turn1search16
+ITIL 4 emphasizes service value, service value chains, organizations and people, information and technology, partners and suppliers, value streams and processes, and integrated service lifecycle management. PM-NOS therefore needs an operating network connecting service consumers, workers, technology, partners and delivery processes.
 
-ISO 41001 establishes a management-system approach for effective and efficient facility management supporting the objectives of the demand organization; the 2026 draft revision is under development. PM-NOS therefore treats provider facilities as operational resources and service environments, not merely addresses. citeturn0search6turn0search8
+ISO 41001 establishes a management-system approach for effective and efficient facility management supporting the objectives of the demand organization; the 2026 draft revision is under development. PM-NOS therefore treats provider facilities as operational resources and service environments, not merely addresses.
 
-ISO 55001:2024 strengthens asset lifecycle management, value realization, decision-making, risk/opportunity management, data and life-cycle operations. PM-NOS therefore treats provider assets as governed operational resources with lifecycle, maintenance, condition, capacity and evidence. citeturn1search1turn1search3
+ISO 55001:2024 strengthens asset lifecycle management, value realization, decision-making, risk/opportunity management, data and life-cycle operations. PM-NOS therefore treats provider assets as governed operational resources with lifecycle, maintenance, condition, capacity and evidence.
 
-ISO 10004:2018 provides current guidance for monitoring and measuring customer satisfaction. PM-NOS therefore treats service quality and customer outcome as governed operational signals rather than merely star ratings. citeturn1search0
+ISO 10004:2018 provides current guidance for monitoring and measuring customer satisfaction. PM-NOS therefore treats service quality and customer outcome as governed operational signals rather than merely star ratings.
 
-NIST Zero Trust states that access must not receive implicit trust merely from network location or ownership and emphasizes explicit authentication and authorization around protected resources. PM-NOS therefore cannot treat provider employment, device ownership, facility presence or provider-network location as automatic permission. citeturn0search0turn0search17
+NIST Zero Trust states that access must not receive implicit trust merely from network location or ownership and emphasizes explicit authentication and authorization around protected resources. PM-NOS therefore cannot treat provider employment, device ownership, facility presence or provider-network location as automatic permission.
 
-NIST's 2025 Zero Trust implementation guidance further covers identity, credential/access management, microsegmentation and secure access across distributed environments. PM-NOS therefore remains an operating consumer of LegaX authorization and access rather than a replacement for it. citeturn0search11
+NIST's 2025 Zero Trust implementation guidance further covers identity, credential/access management, microsegmentation and secure access across distributed environments. PM-NOS therefore remains an operating consumer of LegaX authorization and access rather than a replacement for it.
 
-NIST AI RMF uses Govern, Map, Measure and Manage as continuous AI risk-management functions. PM-NOS therefore allows AI-assisted dispatch, forecasting, maintenance, triage and quality analysis only inside explicit governance, evidence and authorization boundaries. citeturn0search4turn0search72
+NIST AI RMF uses Govern, Map, Measure and Manage as continuous AI risk-management functions. PM-NOS therefore allows AI-assisted dispatch, forecasting, maintenance, triage and quality analysis only inside explicit governance, evidence and authorization boundaries.
 
 ## 4. Canonical definition of Provider
 
@@ -762,7 +762,7 @@ PM-NOS MUST support:
 - maintenance evidence;
 - return-to-service evaluation.
 
-ISO 55001:2024's lifecycle and predictive-action emphasis supports treating maintenance as part of asset value, risk and operational continuity rather than as an isolated ticketing feature. citeturn1search1turn1search3
+ISO 55001:2024's lifecycle and predictive-action emphasis supports treating maintenance as part of asset value, risk and operational continuity rather than as an isolated ticketing feature.
 
 ## 36. Maintenance state
 
@@ -997,7 +997,7 @@ PM-NOS may collect customer satisfaction signals through:
 - service recovery;
 - structured feedback.
 
-ISO 10004 supports systematic monitoring and measurement of customer satisfaction rather than treating one rating as a complete quality truth. citeturn1search0
+ISO 10004 supports systematic monitoring and measurement of customer satisfaction rather than treating one rating as a complete quality truth.
 
 ## 49. Security operations
 
@@ -1517,7 +1517,7 @@ AI MUST preserve:
 - correction;
 - lifecycle.
 
-NIST AI RMF's Govern/Map/Measure/Manage model supports treating AI risk management as continuous rather than a one-time model approval. citeturn0search4turn0search73
+NIST AI RMF's Govern/Map/Measure/Manage model supports treating AI risk management as continuous rather than a one-time model approval.
 
 ## 75. AI authority boundary
 
@@ -2165,7 +2165,7 @@ The integration trust boundary is:
 
 No provider API key, OAuth scope, webhook, service account, device certificate or administrative credential may silently become LegaX authority.
 
-This follows NIST Zero Trust's rejection of implicit trust based on location, ownership or affiliation. citeturn0search0turn0search9
+This follows NIST Zero Trust's rejection of implicit trust based on location, ownership or affiliation.
 
 ## 116. Provider security architecture
 
@@ -2226,7 +2226,7 @@ SoD rules are contextual and policy-driven.
 
 Provider workers receive the minimum access necessary for assigned service operations.
 
-NIST defines least privilege as restricting privileges/resources to the minimum necessary to accomplish assigned tasks. citeturn0search5
+NIST defines least privilege as restricting privileges/resources to the minimum necessary to accomplish assigned tasks.
 
 Therefore:
 
@@ -2670,7 +2670,7 @@ Continuous improvement may use:
 
 **Outcome → Evidence → Measurement → Root Cause → Improvement Proposal → Review → Authorization → Change → Execution → Measurement**
 
-This aligns with service-management and asset-management continuous-improvement principles. citeturn0search1turn1search1
+This aligns with service-management and asset-management continuous-improvement principles.
 
 ## 147. Canonical cross-domain relationship
 
