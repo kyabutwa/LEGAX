@@ -759,7 +759,7 @@ An event should preserve, where applicable:
 - provenance;
 - payload/reference.
 
-LegaX should use a common event envelope compatible with established event interoperability patterns such as CloudEvents rather than inventing incompatible per-service envelopes. CloudEvents exists specifically to provide a common way to describe event data across services and platforms. citeturn0search0
+LegaX should use a common event envelope compatible with established event interoperability patterns such as CloudEvents rather than inventing incompatible per-service envelopes. CloudEvents exists specifically to provide a common way to describe event data across services and platforms.
 
 ### 12.2 Evidence
 
@@ -1261,7 +1261,7 @@ Likewise:
 
 The domain model must support zero-trust assumptions.
 
-Network location, organizational affiliation, ownership, or connectivity must not create implicit trust. NIST's zero-trust guidance emphasizes protecting resources rather than trusting entities because of network location, and its cloud-native guidance explicitly calls for identity-based and granular authorization for users and services. citeturn0search7turn0search1
+Network location, organizational affiliation, ownership, or connectivity must not create implicit trust. NIST's zero-trust guidance emphasizes protecting resources rather than trusting entities because of network location, and its cloud-native guidance explicitly calls for identity-based and granular authorization for users and services.
 
 Therefore:
 
@@ -1272,7 +1272,7 @@ Therefore:
 - network location is contextual data, not authority;
 - resource protection is explicit.
 
-The identity/authentication model should remain compatible with modern assurance, authenticator, federation, and assertion concepts. NIST SP 800-63-4 is the current revision of the Digital Identity Guidelines and separates identity proofing, authentication, federation, and assertions into distinct concerns. citeturn0search2turn0search6turn0search12
+The identity/authentication model should remain compatible with modern assurance, authenticator, federation, and assertion concepts. NIST SP 800-63-4 is the current revision of the Digital Identity Guidelines and separates identity proofing, authentication, federation, and assertions into distinct concerns.
 
 ## 24. Privacy model implications
 
