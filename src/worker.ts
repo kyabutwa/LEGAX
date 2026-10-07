@@ -5,6 +5,7 @@ import { problem } from "./http/problem";
 import { renderControlPlane } from "./ui/control-plane";
 import { renderLandingPage } from "./ui/landing";
 import { renderAuthenticatedHome } from "./ui/authenticated-home";
+import { handleOperating, loadHomeSnapshot } from "./operating";
 import { currentAccount, type AuthEnv } from "./auth";
 import { handleAccountEntry } from "./account-entry-v2";
 import { renderJoin } from "./join";
@@ -17,10 +18,11 @@ export default {async fetch(request:Request,env:Env):Promise<Response>{
  try{
   const context=createRequestContext(request),url=new URL(request.url);requestId=context.requestId;pathname=url.pathname;
   if(pathname==="/account/recovery"||pathname==="/account/recovery/")return handleRecovery(request,env);
+  if(["/communities","/providers","/organizations","/services","/market","/orders","/account/settings"].includes(pathname))return handleOperating(request,env,pathname);
   if(pathname==="/account"||pathname==="/account/")return handleAccountEntry(request,env);
   if(pathname==="/join"||pathname==="/join/")return renderJoin();
   if(pathname==="/onboarding"||pathname==="/onboarding/")return handleOnboarding(request,env);
-  if(request.method==="GET"&&pathname==="/"){const account=await currentAccount(env,request);return account?renderAuthenticatedHome(account):renderLandingPage();}
+  if(request.method==="GET"&&pathname==="/"){const account=await currentAccount(env,request);if(!account)return renderLandingPage();const snapshot=await loadHomeSnapshot(env,account);return renderAuthenticatedHome(account,snapshot);}
   if(request.method==="GET"&&!pathname.startsWith("/api/"))return renderControlPlane(pathname);
   if(request.method==="GET"&&pathname==="/api/health")return json({service:"legax",status:"ok",environment:env.ENVIRONMENT,runtime:"cloudflare-workers",phase:33,implementation:"canonical-foundation"},requestId);
   if(request.method==="GET"&&pathname==="/api/database/health"){try{return json({service:"legax",status:"ok",database:await readCanonicalDatabaseStatus(env)},requestId);}catch(error){const code=error instanceof Error?error.message:"DATABASE_ERROR";return problem(requestId,503,code,"Canonical database unavailable","The LegaX runtime cannot establish a verified connection to the canonical database contract.");}}
