@@ -591,7 +591,7 @@ Risks include:
 - excessive retention;
 - function creep.
 
-NIST's Privacy Framework is a risk-management reference, not a replacement for applicable law. Its current public materials describe Privacy Framework 1.1 work while the published framework remains Version 1.0; LegaX must track future revisions rather than hard-code an assumption that a voluntary framework is law. citeturn0search3turn0search0
+NIST's Privacy Framework is a risk-management reference, not a replacement for applicable law. Its current public materials describe Privacy Framework 1.1 work while the published framework remains Version 1.0; LegaX must track future revisions rather than hard-code an assumption that a voluntary framework is law.
 
 ---
 
@@ -711,7 +711,7 @@ A rights request must therefore follow a governed process:
 
 **REQUEST → REQUESTER VERIFICATION → SCOPE IDENTIFICATION → LEGAL/PROCESSING ANALYSIS → DECISION → EXECUTION → EVIDENCE → RESPONSE → ESCALATION/REDRESS**
 
-Kenya's ODPC identifies rights including information, access, objection, correction and deletion of false or misleading data, while the applicable law and regulations define further procedures and exceptions. citeturn1search0turn1search28
+Kenya's ODPC identifies rights including information, access, objection, correction and deletion of false or misleading data, while the applicable law and regulations define further procedures and exceptions.
 
 A rights request must not expose unrelated people's information.
 
@@ -810,7 +810,7 @@ Untrusted model output cannot override privacy policy.
 
 AI cannot decide that privacy restrictions do not apply.
 
-UNESCO's AI recommendation emphasizes privacy/data protection throughout the AI lifecycle, human oversight, accountability, impact assessment, traceability and multi-stakeholder governance. citeturn0search7turn0search9
+UNESCO's AI recommendation emphasizes privacy/data protection throughout the AI lifecycle, human oversight, accountability, impact assessment, traceability and multi-stakeholder governance.
 
 ---
 
@@ -985,7 +985,7 @@ Each transfer should identify:
 - risk assessment;
 - evidence.
 
-Kenya's Data Protection Act and regulations contain requirements concerning transfers outside Kenya, including safeguards, adequacy, necessity, consent and related conditions. The ODPC also publishes dedicated cross-border guidance. citeturn1search28turn1search3
+Kenya's Data Protection Act and regulations contain requirements concerning transfers outside Kenya, including safeguards, adequacy, necessity, consent and related conditions. The ODPC also publishes dedicated cross-border guidance.
 
 Cloud region is an infrastructure property; it is not by itself a complete legal transfer analysis.
 
@@ -1357,7 +1357,7 @@ Governance should support:
 - remediation;
 - legal holds.
 
-Kenya's ODPC has an oversight and enforcement mandate under the Data Protection Act, including maintaining a register of controllers/processors and handling complaints and assessments. citeturn1search4turn1search5
+Kenya's ODPC has an oversight and enforcement mandate under the Data Protection Act, including maintaining a register of controllers/processors and handling complaints and assessments.
 
 Regulatory interaction must be legally authorized and appropriately scoped.
 
@@ -1412,7 +1412,7 @@ The system should record:
 - evidence;
 - remediation.
 
-Kenya's Data Protection (General) Regulations include specific provisions on notifiable data breaches and notification to the Data Commissioner. citeturn1search28
+Kenya's Data Protection (General) Regulations include specific provisions on notifiable data breaches and notification to the Data Commissioner.
 
 Notification itself does not establish legal liability; legal assessment remains a separate governance function.
 
@@ -2009,7 +2009,7 @@ Kenya is an important deployment jurisdiction, but Kenya law must not be hard-co
 
 For Kenya operations, the architecture must account for the Data Protection Act 2019 and associated regulations and ODPC guidance.
 
-The ODPC publishes the Data Protection Act, General Regulations, Registration Regulations and Complaints/Enforcement Regulations, together with guidance on DPIAs, consent, cross-border transfers, biometrics, health data, children and other processing contexts. citeturn1search1turn1search3
+The ODPC publishes the Data Protection Act, General Regulations, Registration Regulations and Complaints/Enforcement Regulations, together with guidance on DPIAs, consent, cross-border transfers, biometrics, health data, children and other processing contexts.
 
 LegaX must treat these as jurisdictional governance inputs and maintain a mechanism for legal/regulatory updates.
 
@@ -2030,7 +2030,7 @@ LegaX should support jurisdictional mappings to:
 - organizational policies;
 - customer/community commitments.
 
-ISO/IEC 29100:2024 provides a common privacy terminology, actor roles and privacy safeguarding considerations. ISO/IEC 27701:2025 provides requirements and guidance for a Privacy Information Management System and is designed for organizations acting as controllers and processors. These are reference architectures for governance maturity, not substitutes for applicable law. citeturn0search1turn0search2
+ISO/IEC 29100:2024 provides a common privacy terminology, actor roles and privacy safeguarding considerations. ISO/IEC 27701:2025 provides requirements and guidance for a Privacy Information Management System and is designed for organizations acting as controllers and processors. These are reference architectures for governance maturity, not substitutes for applicable law.
 
 ---
 
@@ -2469,7 +2469,7 @@ It does not become a second IAM, second Authorization system, second Security sy
 
 **NO GOVERNED PURPOSE/BASIS → NO UNCONTROLLED PROCESSING.**
 
-**NO AUTHORIZATION → NO CONSEQUENTIAL LEGAX ACTION.**
+**NO AUTHORIZATION → NO CONSEQUENTIAL LegaX ACTION.**
 
 **PRIVACY/GOVERNANCE PROTECTS PEOPLE AND THE LEGITIMATE USE OF DATA WITHOUT BECOMING A PARALLEL AUTHORITY SYSTEM.**
 
