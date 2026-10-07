@@ -1,18 +1,19 @@
 import { currentAccount, createAccount, signIn, signOut, authError, type AuthEnv } from "./auth";
 import { renderLegaXPage } from "./ui/page";
+import { renderAuthenticatedHome } from "./ui/authenticated-home";
 
 const intents=["participant","join-community","community","provider","organization"];
 function esc(v:string){return v.replace(/[&<>"']/g,function(c){return c==="&"?"&amp;":c==="<"?"&lt;":c===">"?"&gt;":c==='"'?"&quot;":"&#39;";});}
 function intentOf(v:string|null){return intents.includes(v||"")?v||"":"";}
 function selectedLabel(v:string){if(v==="participant")return "Join as a Participant";if(v==="join-community")return "Join a Community";if(v==="community")return "Join as a Community";if(v==="provider")return "Join as a Provider";if(v==="organization")return "Join as an Organization";return "Enter LegaX";}
-function redirectWithSession(response:Response,next:string){if(response.status!==303)return response;const headers=new Headers(response.headers);headers.set("location",next);return new Response(null,{status:303,headers});}
+async function redirectWithSession(response:Response,request:Request,env:AuthEnv,next:string){if(response.status!==303)return response;if(next==="/"){const setCookie=response.headers.get("set-cookie");const token=setCookie?.split(";")[0];if(token){const homeRequest=new Request(request.url,{headers:{cookie:token}});const account=await currentAccount(env,homeRequest);if(account){const home=renderAuthenticatedHome(account);const headers=new Headers(home.headers);headers.set("set-cookie",setCookie);headers.set("cache-control","no-store");return new Response(home.body,{status:200,headers});}}}const headers=new Headers(response.headers);headers.set("location",next);headers.set("cache-control","no-store");return new Response(null,{status:303,headers});}
 export async function handleAccountEntry(request:Request,env:AuthEnv):Promise<Response>{
  const url=new URL(request.url),intent=intentOf(url.searchParams.get("intent"));
  try{
   if(request.method==="POST"){
    const form=await request.formData(),action=String(form.get("action")||""),chosen=intentOf(String(form.get("intent")||intent)),next=chosen?"/onboarding?intent="+encodeURIComponent(chosen):"/";
-   if(action==="create")return redirectWithSession(await createAccount(env,{email:String(form.get("email")||""),password:String(form.get("password")||""),passwordConfirmation:String(form.get("password_confirmation")||""),displayName:String(form.get("display_name")||"")}),next);
-   if(action==="signin")return redirectWithSession(await signIn(env,{email:String(form.get("email")||""),password:String(form.get("password")||"")}),next);
+   if(action==="create")return redirectWithSession(await createAccount(env,{email:String(form.get("email")||""),password:String(form.get("password")||""),passwordConfirmation:String(form.get("password_confirmation")||""),displayName:String(form.get("display_name")||"")}),request,env,next);
+   if(action==="signin")return redirectWithSession(await signIn(env,{email:String(form.get("email")||""),password:String(form.get("password")||"")}),request,env,next);
    if(action==="signout")return signOut(env,request);
   }
   return renderAccountEntry(await currentAccount(env,request),null,intent,url.searchParams.get("recovered")==="1");
