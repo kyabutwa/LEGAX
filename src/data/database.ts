@@ -20,14 +20,16 @@ export async function readCanonicalDatabaseStatus(
   }
 
   const sql = neon(env.DATABASE_URL);
-  const rows = await sql<{
-    schema: string;
-    product_name: string;
-    contract_version: string;
-    consequential_writes_enabled: boolean;
-  }[]>(
-    "SELECT current_schema() AS schema, product_name, contract_version, consequential_writes_enabled FROM legax.runtime_contract WHERE contract_id = 1 LIMIT 1"
-  );
+  const rows = await sql`
+    SELECT
+      current_schema() AS schema,
+      product_name,
+      contract_version,
+      consequential_writes_enabled
+    FROM legax.runtime_contract
+    WHERE contract_id = 1
+    LIMIT 1
+  `;
 
   const row = rows[0];
   if (!row) {
