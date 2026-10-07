@@ -32,7 +32,7 @@ test("Phase 33 control-plane UI is governed and routed",async()=>{
  assert.match(auth,/EMAIL_PASSWORD/);
  assert.match(account,/Create account/);
  assert.match(account,/Sign in/);
- assert.match(account,/Forgot password/);
+ assert.match(account,/canonical recovery flow/);
 
  for(const path of ["\/identity","\/people","\/participation","\/communities","\/organizations","\/providers","\/places","\/units","\/resources","\/services","\/access","\/requests","\/activity","\/evidence","\/commerce","\/account","\/administration"]){
   assert.match(control,new RegExp(path.replace("\\/","\\/")));
