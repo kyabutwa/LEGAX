@@ -85,7 +85,7 @@ async function startSession(env:AuthEnv,accountId:string){
  const expires=new Date(Date.now()+SESSION_DAYS*86400000);
  const sql=db(env);
  await sql`INSERT INTO legax.sessions(account_id,state,session_secret_reference,expires_at,last_seen_at) VALUES(${accountId},'ACTIVE',${hash},${expires.toISOString()},now())`;
- return new Response(null,{status:303,headers:{location:"/account", "set-cookie":cookie(token)}});
+ return new Response(null,{status:303,headers:{location:"/account"}});
 }
 
 export async function currentAccount(env:AuthEnv,request:Request){
