@@ -24,7 +24,7 @@ These states are not interchangeable. A credential may verify education or autho
 
 Evidence should preserve issuer/source, subject, scope, issuance time, expiry, verification method, provenance, and dispute/correction state.
 
-Where digital credentials are used, LegaWork should support interoperable verifiable-credential models. W3C Verifiable Credentials 2.0 is a Recommendation defining a cryptographically secure, privacy-respecting, machine-verifiable model with issuer, holder, and verifier roles. citeturn0search1turn0search2
+Where digital credentials are used, LegaWork should support interoperable verifiable-credential models. W3C Verifiable Credentials 2.0 is a Recommendation defining a cryptographically secure, privacy-respecting, machine-verifiable model with issuer, holder, and verifier roles.
 
 ### Opportunity lifecycle
 
