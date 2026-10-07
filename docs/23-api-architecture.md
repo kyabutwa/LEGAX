@@ -251,7 +251,7 @@ Responses must filter secrets, protected data and internal details. File APIs re
 
 ## 38. Privacy architecture
 
-API serialization is a privacy boundary. Responses may expose less than the underlying database.
+**22 Privacy/Governance Architecture is the canonical privacy boundary for API data processing.** API serialization is a privacy boundary. Responses may expose less than the underlying database.
 
 Purpose, minimization, field-level disclosure, retention, logging, exports, jurisdiction, consent where applicable and controller/processor roles follow Phase 22.
 
