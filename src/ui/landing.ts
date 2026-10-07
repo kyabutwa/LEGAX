@@ -6,7 +6,7 @@ export function renderLandingPage(): Response {
     active: "Overview",
     content: `
 <section class="landing-hero">
-  <img class="landing-logo" src="https://raw.githubusercontent.com/kyabutwa/LEGAX/main/IMG_1723.jpeg" alt="LegaX">
+  <img class="landing-logo" src="https://raw.githubusercontent.com/kyabutwa/LEGAX/main/legax-logo-transparent.png" alt="LegaX">
   <p class="landing-eyebrow">INTELLIGENT LIVING INFRASTRUCTURE</p>
   <h1>Who you are.<br>Where you belong.</h1>
   <p class="landing-lede">LegaX is building a trusted foundation for people to enter, identify themselves and participate in the places and communities they choose.</p>
