@@ -25,6 +25,9 @@ test("Phase 33 canonical runtime and account entry are wired",async()=>{
  assert.match(worker,/handleRecovery/);
  assert.match(worker,/currentAccount\(env,request\)/);
  assert.match(worker,/renderAuthenticatedHome/);
+ assert.match(account,/renderAuthenticatedHome/);
+ assert.match(account,/async function redirectWithSession/);
+ assert.match(account,/set-cookie/);
  assert.match(worker,/\/api\/health/);
  assert.match(worker,/\/api\/database\/health/);
  assert.match(auth,/PBKDF2/);
