@@ -7,12 +7,14 @@ import { renderLandingPage } from "./ui/landing";
 import { handleAccountEntry } from "./account-entry-v2";
 import { renderJoin } from "./join";
 import { handleOnboarding } from "./onboarding-entry";
+import { handleRecovery } from "./recovery";
 export interface Env { ENVIRONMENT:string; DATABASE_URL?:string; }
 function json(data:unknown,requestId:string,status=200){return new Response(JSON.stringify(data),{status,headers:{"content-type":"application/json; charset=utf-8","cache-control":"no-store","x-request-id":requestId}});}
 export default {async fetch(request:Request,env:Env):Promise<Response>{
  let requestId="unknown",pathname="unknown";
  try{
   const context=createRequestContext(request),url=new URL(request.url);requestId=context.requestId;pathname=url.pathname;
+  if(pathname==="/account/recovery"||pathname==="/account/recovery/")return handleRecovery(request,env);
   if(pathname==="/account"||pathname==="/account/")return handleAccountEntry(request,env);
   if(pathname==="/join"||pathname==="/join/")return renderJoin();
   if(pathname==="/onboarding"||pathname==="/onboarding/")return handleOnboarding(request,env);
