@@ -1,6 +1,6 @@
 import { renderLegaXPage } from "./page";
 
-type AccountView={display_name?:string;account_id:string;verification_state?:string};
+type AccountView=Record<string,any>;
 
 const entryCards=[
  ["Participant","Join as a Participant","Resident and other participant relationships.","/onboarding?intent=participant","Available"],
