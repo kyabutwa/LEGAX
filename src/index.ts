@@ -3,6 +3,7 @@ import { CORE_RULES } from "./core/contracts";
 import { createRequestContext } from "./core/runtime";
 import { problem } from "./http/problem";
 import { renderAppShell } from "./ui/app-shell";
+import { renderPeople } from "./ui/people";
 
 export interface Env {
   ENVIRONMENT: string;
@@ -27,6 +28,10 @@ export default {
 
     if (request.method === "GET" && url.pathname === "/") {
       return renderAppShell();
+    }
+
+    if (request.method === "GET" && url.pathname === "/people") {
+      return renderPeople();
     }
 
     if (request.method === "GET" && url.pathname === "/api/health") {
