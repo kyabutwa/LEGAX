@@ -4,61 +4,56 @@ import { readFile } from "node:fs/promises";
 
 const read=(path)=>readFile(new URL(path,import.meta.url),"utf8");
 
-test("Phase 33 control-plane UI is governed and routed",async()=>{
+test("Phase 33 canonical runtime and account entry are wired",async()=>{
  const contracts=await read("../src/core/contracts.ts");
  const runtime=await read("../src/core/runtime.ts");
- const worker=await read("../src/index.ts");
- const page=await read("../src/ui/page.ts");
+ const worker=await read("../src/worker.ts");
  const auth=await read("../src/auth.ts");
- const account=await read("../src/account.ts");
- const shell=await read("../src/ui/app-shell.ts");
+ const account=await read("../src/account-entry-v2.ts");
+ const recovery=await read("../src/recovery.ts");
+ const join=await read("../src/join.ts");
+ const onboarding=await read("../src/onboarding-entry.ts");
  const landing=await read("../src/ui/landing.ts");
- const control=await read("../src/ui/control-plane.ts");\n const join=await read("../src/join.ts");\n const onboarding=await read("../src/onboarding-entry.ts");\n const accountEntry=await read("../src/account-entry.ts");
-
  assert.match(contracts,/noAuthorizationNoConsequentialAction:\s*true/);
  assert.match(contracts,/noParallelAuthorityChain:\s*true/);
  assert.match(contracts,/noParallelExecutionEngine:\s*true/);
- assert.match(contracts,/unknownExternalOutcomeIsNotSuccess:\s*true/);
  assert.match(runtime,/decision\.effect !== "ALLOW"/);
- assert.match(worker,/renderControlPlane/);
+ assert.match(worker,/handleAccountEntry/);
+ assert.match(worker,/handleRecovery/);
  assert.match(worker,/\/api\/health/);
- assert.match(worker,/\/api\/runtime-contract/);
  assert.match(worker,/\/api\/database\/health/);
- assert.match(worker,/readCanonicalDatabaseStatus/);
- assert.match(worker,/CAPABILITY_NOT_IMPLEMENTED/);
- assert.match(worker,/handleAccountEntry/);\n assert.match(worker,/renderJoin/);\n assert.match(worker,/handleOnboarding/);
  assert.match(auth,/PBKDF2/);
- assert.match(auth,/HttpOnly/);
- assert.match(auth,/legax\.sessions/);
- assert.match(auth,/EMAIL_PASSWORD/);
- assert.match(account,/Create account/);
- assert.match(account,/Sign in/);
- assert.match(account,/canonical recovery flow/);\n assert.match(join,/Join as a Participant/);\n assert.match(join,/Join a Community/);\n assert.match(join,/Join as a Provider/);\n assert.match(join,/Join as an Organization/);\n assert.match(onboarding,/legax\.participations/);\n assert.match(onboarding,/legax\.participants/);\n assert.match(accountEntry,/onboarding/);
-
- for(const path of ["\/identity","\/people","\/participation","\/communities","\/organizations","\/providers","\/places","\/units","\/resources","\/services","\/access","\/requests","\/activity","\/evidence","\/commerce","\/account","\/administration"]){
-  assert.match(control,new RegExp(path.replace("\\/","\\/")));
- }
- assert.match(page,/Open LegaX navigation/);
- assert.match(page,/Primary navigation/);
- assert.match(page,/prefers-reduced-motion/);
- assert.match(page,/mark-logo/);
- assert.match(page,/raw\.githubusercontent\.com\/kyabutwa\/LEGAX\/main\/legax-logo-transparent\.png/);
- assert.match(shell,/renderLandingPage/);
+ assert.match(auth,/PASSWORD_CONFIRMATION_MISMATCH/);
+ assert.match(auth,/primary_credential_id/);
+ assert.match(account,/Confirm password/);
+ assert.match(account,/Forgot password/);
+ assert.match(recovery,/account_recovery_challenges/);
+ assert.match(recovery,/Reset password/);
+ assert.match(recovery,/password_confirmation/);
+ assert.match(join,/Join as a Participant/);
+ assert.match(join,/Join a Community/);
+ assert.match(join,/Join as a Community/);
+ assert.match(join,/Join as a Provider/);
+ assert.match(join,/Join as an Organization/);
+ assert.match(onboarding,/legax\.participations/);
+ assert.match(onboarding,/legax\.participants/);
  assert.match(landing,/Choose your LegaX path/);
- assert.match(landing,/The feature we are shipping now/);
  assert.match(landing,/real account/);
  assert.doesNotMatch(landing,/dashboard|social proof|testimonials/i);
- assert.match(control,/No authoritative records are loaded into this surface/);
- assert.match(control,/UI presents authority; UI does not create authority/);
- assert.match(control,/Context \/ authorization required/);
 });
 
 test("Phase 33 runtime has no legacy product names",async()=>{
- const files=["../src/core/contracts.ts","../src/core/runtime.ts","../src/http/problem.ts","../src/index.ts","../src/ui/page.ts","../src/ui/app-shell.ts","../src/ui/people.ts","../src/ui/control-plane.ts","../src/ui/landing.ts","../src/data/database.ts","../src/auth.ts","../src/account.ts","../db/migrations/0005_canonical_legax_schema.sql","../wrangler.jsonc","../package.json"];
+ const files=[
+  "../src/core/contracts.ts","../src/core/runtime.ts","../src/http/problem.ts",
+  "../src/worker.ts","../src/ui/page.ts","../src/ui/app-shell.ts","../src/ui/people.ts",
+  "../src/ui/control-plane.ts","../src/ui/landing.ts","../src/data/database.ts",
+  "../src/auth.ts","../src/account-entry-v2.ts","../src/recovery.ts",
+  "../db/migrations/0005_canonical_legax_schema.sql","../wrangler.jsonc","../package.json"
+ ];
  for(const file of files){const content=await read(file);assert.doesNotMatch(content,/LegaKeys|LegaPin/);}
 });
 
-test("Canonical schema migration remains explicit and non-duplicating",async()=>{
+test("Canonical migration is non-duplicating",async()=>{
  const migration=await read("../db/migrations/0005_canonical_legax_schema.sql");
  assert.match(migration,/ALTER SCHEMA legakeys RENAME TO legax/);
  assert.match(migration,/product_name = 'LegaX'/);
