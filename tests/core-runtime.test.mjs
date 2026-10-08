@@ -100,7 +100,7 @@ test("command binding rejects missing authorization and idempotency bindings", (
     { requestId: "" },
     { commandType: "" }
   ]) {
-    assert.throws(() => runtime.bindCommand({ ...base, ...patch }), /^Error: INVALID_COMMAND_/);
+    assert.throws(() => runtime.bindCommand({ ...base, ...patch }), /^INVALID_COMMAND_/);
   }
 });
 
